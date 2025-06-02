@@ -47,20 +47,24 @@ namespace WebApplication4.Controllers
         [HttpPut("{userId}")]
         public async Task<ActionResult<UserDto>> EditUser(long userId, UserDto userDto)
         {
-            if (userDto.Name == "" | userDto.Name == null)
+            var existingUser = await _context.User.FindAsync(userId);
+
+            if (existingUser == null)
             {
-                return BadRequest("Name cannot be empty");
+                return NotFound("User doesn't exists");
             }
 
-            var user = await _context.User.FindAsync(userId);
+            User user = new User();
 
-            if (user == null)
+            if (userDto.Name != null)
             {
-                return NotFound("User not found");
+                user.Name = userDto.Name;
             }
 
-            user.Name = userDto.Name;
-            user.AboutMe = userDto.AboutMe;
+            if (userDto.AboutMe != null)
+            {
+                user.AboutMe = userDto.AboutMe;
+            }
 
             await _context.SaveChangesAsync();
 
