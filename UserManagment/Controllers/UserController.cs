@@ -60,6 +60,11 @@ namespace WebApplication4.Controllers
             }
 
             user.Name = userDto.Name;
+                await _context.SaveChangesAsync();
+            }
+
+            if (userDto.AboutMe != null)
+            {
             user.AboutMe = userDto.AboutMe;
 
             await _context.SaveChangesAsync();

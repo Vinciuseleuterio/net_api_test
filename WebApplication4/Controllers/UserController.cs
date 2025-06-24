@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using NotesApp.Dto;
 using WebApplication4.Data;
 using WebApplication4.Dto;
 using WebApplication4.Models;
@@ -10,7 +10,6 @@ namespace WebApplication4.Controllers
     [ApiController]
     public class UserController : ControllerBase
     {
-        // Realiza a injeção de dependência da "ApplicationContext" 
         private readonly ApplicationContext _context;
 
         public UserController(ApplicationContext applicationContext)
@@ -18,106 +17,103 @@ namespace WebApplication4.Controllers
             _context = applicationContext;
         }
 
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<UserDto>>> GetUsers()
+        [HttpPost]
+        public async Task<ActionResult<CreateUserDto>> CreateUser(CreateUserDto CreateUserDto)
         {
-            return await _context.User
-                .Select(x => UserToDto(x))
-                .ToListAsync();
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            if (_context.User.Any(u => u.Email == CreateUserDto.Email))
+            {
+                return Conflict("Email already exists.");
+            }
+
+            var user = new User
+            {
+                Name = CreateUserDto.Name,
+                Email = CreateUserDto.Email
+            };
+
+            if (!string.IsNullOrEmpty(CreateUserDto.AboutMe))
+            {
+                user.AboutMe = CreateUserDto.AboutMe;
+            }
+
+            _context.User.Add(user);
+            user.Created();
+            await _context.SaveChangesAsync();
+
+            return Created("", UserToDto(user));
         }
 
         [HttpGet("{userId}")]
-        public async Task<ActionResult<UserDto>> GetUserById(long? userId)
+        public async Task<ActionResult<CreateUserDto>> GetUserById(long? userId)
         {
-            if (userId == null)
+            var user = await _context.User.FindAsync(userId);
+
+            if (user == null)
             {
-                return BadRequest("UserId cannot be empty or null");
+                return NotFound();
+            }
+
+            return Ok(UserToDto(user));
+        }
+
+        [HttpPatch("{userId}")]
+        public async Task<ActionResult<CreateUserDto>> EditUser(long userId, EditUserDto editUserDto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest();
             }
 
             var user = await _context.User.FindAsync(userId);
 
             if (user == null)
             {
-                return NotFound("User not found");
+                return NotFound("User not found.");
             }
 
-            return UserToDto(user);
-        }
-
-        [HttpPut("{userId}")]
-        public async Task<ActionResult<UserDto>> EditUser(long userId, UserDto userDto)
-        {
-            var existingUser = await _context.User.FindAsync(userId);
-
-            if (existingUser == null)
+            if (!string.IsNullOrEmpty(editUserDto.Name))
             {
-                return NotFound("User doesn't exists");
+                user.Name = editUserDto.Name;
+
             }
 
-            User user = new User();
+            user.AboutMe = editUserDto.AboutMe;
 
-            if (userDto.Name != null)
-            {
-                user.Name = userDto.Name;
-            }
-
-            if (userDto.AboutMe != null)
-            {
-                user.AboutMe = userDto.AboutMe;
-            }
-
+            user.Updated();
             await _context.SaveChangesAsync();
 
-            return Created("The following user was edited with success", UserToDto(user));
-        }
-
-        [HttpPost]
-        public async Task<ActionResult<UserDto>> CreateUser(UserDto? userDto)
-        {
-            if (userDto?.Email == "" | userDto?.Name == "")
-            {
-                return BadRequest("Email or Name cannot be empty");
-            }
-
-            if (_context.User.Any(user => user.Email == userDto.Email))
-            {
-                return BadRequest("Email is already taken");
-            }
-
-            var user = new User();
-
-            user.Name = userDto.Name;
-            user.AboutMe = userDto.AboutMe;
-            user.Email = userDto.Email;
-
-            _context.User.Add(user);
-            await _context.SaveChangesAsync();
-
-            return Created("The following user was created with success", UserToDto(user));
+            return Ok(UserToDto(user));
         }
 
         [HttpDelete("{userId}")]
-        public async Task<ActionResult<UserDto>> DeleteUser(long userId)
+        public async Task<ActionResult<CreateUserDto>> DeleteUser(long userId)
         {
             var user = await _context.User.FindAsync(userId);
 
             if (user == null)
             {
-                return NotFound("User not found");
+                return NotFound();
             }
 
-            _context.User.Remove(user);
+
+
+            user.Delete();
             await _context.SaveChangesAsync();
 
-            return Ok("User was deleted");
+            return Ok();
         }
 
-        private static UserDto UserToDto(User user) =>
-            new UserDto
+        private static CreateUserDto UserToDto(User user) =>
+            new CreateUserDto
             {
                 Name = user.Name,
-                AboutMe = user.AboutMe,
-                Email = user.Email
+                Email = user.Email,
+                AboutMe = user.AboutMe
             };
     }
 }

@@ -10,7 +10,6 @@ namespace WebApplication4.Controllers
     [ApiController]
     public class NoteController : ControllerBase
     {
-        // Realiza a injeção de dependência da "ApplicationContext" 
         private readonly ApplicationContext _context;
 
         public NoteController(ApplicationContext context)
@@ -19,26 +18,41 @@ namespace WebApplication4.Controllers
         }
 
         [HttpGet("{userId}")]
-        public async Task<ActionResult<IEnumerable<NoteDto>>> GetAllNotesByUserId(long? userId)
+        public async Task<ActionResult<IEnumerable<NoteDto>>> GetAllNotesFromUser(long? userId)
         {
-            if (userId == null | userId <= 0)
-            {
-                return BadRequest("UserId cannot be empty or null");
-            }
-
             var notes = await _context.Note
-                .Where(note => note.UserId == userId)
+                .Where(note => note.CreatorId == userId)
                 .ToListAsync();
 
             if (notes.Count == 0)
             {
-                return BadRequest("Note(s) does not exist");
+                return NotFound();
             }
 
             return Ok(notes.Select(note => NotesToDto(note)));
         }
 
-        [HttpPut("{userId}/{noteId}")]
+        [HttpGet("{userId}/{groupId}")]
+        public async Task<ActionResult<IEnumerable<NoteDto>>> GetAllNotesFromGroup(long? userId, long? groupId)
+        {
+
+            var group = await _context.GroupMembership
+                .Where(userToGroup => userToGroup.GroupId == groupId && userToGroup.UserId == userId)
+                .FirstAsync();
+
+            if (group == null)
+            {
+                NotFound();
+            }
+
+            var notes = await _context.Note.
+                Where(note => note.GroupId == groupId)
+                .ToListAsync();
+
+            return Ok(notes.Select(note => NotesToDto(note)));
+        }
+
+        [HttpPatch("{userId}/{noteId}")]
         public async Task<ActionResult<NoteDto>> EditNoteFromUser(long userId, long noteId, NoteDto noteDto)
         {
             var note = _context.Note
@@ -46,47 +60,83 @@ namespace WebApplication4.Controllers
 
             if (note == null)
             {
-                return NotFound("Note does not exist");
+                return NotFound();
             }
 
-            if (note.UserId != userId)
+            if (note.CreatorId != userId)
             {
-                return Forbid("Note does not belong to user");
+                return Forbid();
             }
 
-            note.Text = noteDto.Text;
+            note.Content = noteDto.Text;
             note.Title = noteDto.Title;
-            _context.Entry(note).State = EntityState.Modified;
+
+            _context.Entry(note);
             await _context.SaveChangesAsync();
 
-            return Created("The succeeding note was edited with success", NotesToDto(note));
+            return Created();
         }
 
         [HttpPost("{userId}")]
-        public async Task<ActionResult<NoteDto>> CreateNote(NoteDto noteDto, long userId)
+        public async Task<ActionResult<NoteDto>> CreatePersonalNote(NoteDto noteDto, long userId)
         {
-            var user = _context.User.FirstOrDefault(user => user.Id == userId);
-
-            if (noteDto.Title == "" | noteDto.Text == "")
-            {
-                return BadRequest("Title and Text are required");
-            }
+            var user = _context.User.FirstOrDefaultAsync(user => user.Id == userId);
 
             if (user == null)
             {
-                return BadRequest("User does not exist");
+                return BadRequest();
             }
 
-            Note note = new Note();
-            note.Title = noteDto.Title;
-            note.Text = noteDto.Text;
-            note.UserId = userId; // Injeta o ID do usuário que vem da URL no campo "UserId"
+            if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
+
+            Note note = new Note
+            {
+                Title = noteDto.Title,
+                Content = noteDto.Text,
+                CreatorId = userId
+            };
 
             _context.Note.Add(note);
             await _context.SaveChangesAsync();
 
-            return Created("The succeeding note was created with success", NotesToDto(note));
+            return Created("", NotesToDto(note));
         }
+
+        [HttpPost("{userId}/{groupId}")]
+
+        public async Task<ActionResult<NoteDto>> CreateGroupNote(NoteDto noteDto, long userId, long groupId)
+        {
+
+            var user = _context.User.FirstOrDefaultAsync(user => user.Id == userId);
+
+            if (user == null)
+            {
+                return NotFound();
+
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
+
+            Note note = new Note
+            {
+                CreatorId = userId,
+                Title = noteDto.Title,
+                Content = noteDto.Text,
+                GroupId = groupId
+            };
+
+            _context.Note.Add(note);
+            await _context.SaveChangesAsync();
+
+            return Created("", NotesToDto(note));
+        }
+
 
         [HttpDelete("{userId}/{noteId}")]
         public async Task<ActionResult<NoteDto>> DeleteNoteFromUser(long userId, long noteId)
@@ -97,31 +147,25 @@ namespace WebApplication4.Controllers
 
             if (note == null)
             {
-                return NotFound("Note does not exist");
+                return NotFound();
             }
 
-            if (userId != note.UserId)
+            if (userId != note.CreatorId)
             {
-                return Forbid("Note does not belong to user");
+                return Forbid();
             }
 
-            _context.Note.Remove(note);
+            note.Delete();
             await _context.SaveChangesAsync();
 
-            return Ok("The note was deleted with success");
+            return Ok();
         }
 
-        private bool NoteExists(long userId)
-        {
-            return _context.Note.Any(e => e.UserId == userId);
-        }
-
-        // Realiza a conversão da nota para o nosso DTO (Data Transfer Object)
         private static NoteDto NotesToDto(Note note) =>
             new NoteDto
             {
                 Title = note.Title,
-                Text = note.Text
+                Text = note.Content
             };
     }
 }
