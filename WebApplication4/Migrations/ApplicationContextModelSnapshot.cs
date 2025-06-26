@@ -8,7 +8,7 @@ using WebApplication4.Data;
 
 #nullable disable
 
-namespace WebApplication4.Migrations
+namespace NotesApp.Migrations
 {
     [DbContext(typeof(ApplicationContext))]
     partial class ApplicationContextModelSnapshot : ModelSnapshot
@@ -81,6 +81,10 @@ namespace WebApplication4.Migrations
                         .HasColumnType("bigint")
                         .HasColumnName("group_id");
 
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_deleted");
+
                     b.Property<long>("UserId")
                         .HasColumnType("bigint")
                         .HasColumnName("user_id");
@@ -116,7 +120,7 @@ namespace WebApplication4.Migrations
                         .HasColumnType("bigint")
                         .HasColumnName("creator_id");
 
-                    b.Property<long>("GroupId")
+                    b.Property<long?>("GroupId")
                         .HasColumnType("bigint")
                         .HasColumnName("group_id");
 
@@ -166,9 +170,6 @@ namespace WebApplication4.Migrations
                         .HasColumnType("character varying(100)")
                         .HasColumnName("email");
 
-                    b.Property<long?>("GroupId")
-                        .HasColumnType("bigint");
-
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean")
                         .HasColumnName("is_deleted");
@@ -188,32 +189,30 @@ namespace WebApplication4.Migrations
                     b.HasIndex("Email")
                         .IsUnique();
 
-                    b.HasIndex("GroupId");
-
                     b.ToTable("users");
                 });
 
             modelBuilder.Entity("NotesApp.Models.Group", b =>
                 {
-                    b.HasOne("WebApplication4.Models.User", "User")
-                        .WithMany("Groups")
+                    b.HasOne("WebApplication4.Models.User", "Creator")
+                        .WithMany()
                         .HasForeignKey("CreatorId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("User");
+                    b.Navigation("Creator");
                 });
 
             modelBuilder.Entity("NotesApp.Models.GroupMembership", b =>
                 {
                     b.HasOne("NotesApp.Models.Group", "Group")
-                        .WithMany("GroupMemberships")
+                        .WithMany()
                         .HasForeignKey("GroupId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("WebApplication4.Models.User", "User")
-                        .WithMany("GroupMemberships")
+                        .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -226,45 +225,18 @@ namespace WebApplication4.Migrations
             modelBuilder.Entity("WebApplication4.Models.Note", b =>
                 {
                     b.HasOne("WebApplication4.Models.User", "User")
-                        .WithMany("Notes")
+                        .WithMany()
                         .HasForeignKey("CreatorId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("NotesApp.Models.Group", "Group")
-                        .WithMany("Notes")
-                        .HasForeignKey("GroupId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .WithMany()
+                        .HasForeignKey("GroupId");
 
                     b.Navigation("Group");
 
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("WebApplication4.Models.User", b =>
-                {
-                    b.HasOne("NotesApp.Models.Group", null)
-                        .WithMany("Users")
-                        .HasForeignKey("GroupId");
-                });
-
-            modelBuilder.Entity("NotesApp.Models.Group", b =>
-                {
-                    b.Navigation("GroupMemberships");
-
-                    b.Navigation("Notes");
-
-                    b.Navigation("Users");
-                });
-
-            modelBuilder.Entity("WebApplication4.Models.User", b =>
-                {
-                    b.Navigation("GroupMemberships");
-
-                    b.Navigation("Groups");
-
-                    b.Navigation("Notes");
                 });
 #pragma warning restore 612, 618
         }

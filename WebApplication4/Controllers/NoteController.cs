@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using NotesApp.Dtos;
 using WebApplication4.Data;
 using WebApplication4.Dto;
 using WebApplication4.Models;
@@ -18,7 +19,7 @@ namespace WebApplication4.Controllers
         }
 
         [HttpGet("{userId}")]
-        public async Task<ActionResult<IEnumerable<NoteDto>>> GetAllNotesFromUser(long? userId)
+        public async Task<ActionResult<IEnumerable<CreateNote>>> GetAllNotesFromUser(long? userId)
         {
             var notes = await _context.Note
                 .Where(note => note.CreatorId == userId)
@@ -33,7 +34,7 @@ namespace WebApplication4.Controllers
         }
 
         [HttpGet("{userId}/{groupId}")]
-        public async Task<ActionResult<IEnumerable<NoteDto>>> GetAllNotesFromGroup(long? userId, long? groupId)
+        public async Task<ActionResult<IEnumerable<CreateNote>>> GetAllNotesFromGroup(long? userId, long? groupId)
         {
 
             var group = await _context.GroupMembership
@@ -53,7 +54,7 @@ namespace WebApplication4.Controllers
         }
 
         [HttpPatch("{userId}/{noteId}")]
-        public async Task<ActionResult<NoteDto>> EditNoteFromUser(long userId, long noteId, NoteDto noteDto)
+        public async Task<ActionResult<CreateNote>> EditNoteFromUser(long userId, long noteId, EditNoteDto editNoteDto)
         {
             var note = _context.Note
                 .FirstOrDefault(note => note.Id == noteId);
@@ -65,22 +66,36 @@ namespace WebApplication4.Controllers
 
             if (note.CreatorId != userId)
             {
-                return Forbid();
+                return BadRequest("Nota não pertence ao usuário");
             }
 
-            note.Content = noteDto.Text;
-            note.Title = noteDto.Title;
+            if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
+
+            if (!string.IsNullOrEmpty(editNoteDto.Title))
+            {
+                note.Title = editNoteDto.Title;
+            }
+
+            if (!string.IsNullOrEmpty(editNoteDto.Content))
+            {
+                note.Content = editNoteDto.Content;
+            }
 
             _context.Entry(note);
+            note.Updated();
             await _context.SaveChangesAsync();
 
             return Created();
         }
 
         [HttpPost("{userId}")]
-        public async Task<ActionResult<NoteDto>> CreatePersonalNote(NoteDto noteDto, long userId)
+        public async Task<ActionResult<CreateNote>> CreatePersonalNote(CreateNote noteDto, long userId)
         {
-            var user = _context.User.FirstOrDefaultAsync(user => user.Id == userId);
+            var user = await _context.User
+            .FindAsync(userId);
 
             if (user == null)
             {
@@ -95,22 +110,23 @@ namespace WebApplication4.Controllers
             Note note = new Note
             {
                 Title = noteDto.Title,
-                Content = noteDto.Text,
+                Content = noteDto.Content,
                 CreatorId = userId
             };
 
             _context.Note.Add(note);
+            note.Created();
             await _context.SaveChangesAsync();
 
             return Created("", NotesToDto(note));
         }
 
         [HttpPost("{userId}/{groupId}")]
-
-        public async Task<ActionResult<NoteDto>> CreateGroupNote(NoteDto noteDto, long userId, long groupId)
+        public async Task<ActionResult<CreateNote>> CreateGroupNote(CreateNote noteDto, long userId, long groupId)
         {
 
-            var user = _context.User.FirstOrDefaultAsync(user => user.Id == userId);
+            var user = await _context.User
+                .FindAsync(userId);
 
             if (user == null)
             {
@@ -126,12 +142,13 @@ namespace WebApplication4.Controllers
             Note note = new Note
             {
                 CreatorId = userId,
+                GroupId = groupId,
                 Title = noteDto.Title,
-                Content = noteDto.Text,
-                GroupId = groupId
+                Content = noteDto.Content
             };
 
             _context.Note.Add(note);
+            note.Created();
             await _context.SaveChangesAsync();
 
             return Created("", NotesToDto(note));
@@ -139,7 +156,7 @@ namespace WebApplication4.Controllers
 
 
         [HttpDelete("{userId}/{noteId}")]
-        public async Task<ActionResult<NoteDto>> DeleteNoteFromUser(long userId, long noteId)
+        public async Task<ActionResult<CreateNote>> DeleteNoteFromUser(long userId, long noteId)
         {
             var note = await _context.Note
                 .Where(note => note.Id == noteId)
@@ -161,11 +178,11 @@ namespace WebApplication4.Controllers
             return Ok();
         }
 
-        private static NoteDto NotesToDto(Note note) =>
-            new NoteDto
+        private static CreateNote NotesToDto(Note note) =>
+            new CreateNote
             {
                 Title = note.Title,
-                Text = note.Content
+                Content = note.Content
             };
     }
 }

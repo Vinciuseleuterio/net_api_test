@@ -1,8 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NotesApp.Dto;
+using NotesApp.Dtos;
 using NotesApp.Models;
 using WebApplication4.Data;
+using WebApplication4.Models;
 
 namespace NotesApp.Controllers
 {
@@ -16,6 +18,22 @@ namespace NotesApp.Controllers
         public GroupController(ApplicationContext applicationContext)
         {
             _context = applicationContext;
+        }
+
+
+        [HttpGet("{userId}")]
+        public async Task<ActionResult<IEnumerable<GroupDto>>> getGroupsFromUser(long userId)
+        {
+            var group = await _context.Group
+                .Where(g => g.CreatorId == userId)
+                .ToListAsync();
+
+            if (group.Count == 0)
+            {
+                return NotFound();
+            }
+
+            return Ok(group.Select(g => GroupToDto(g)));
         }
 
         [HttpPost("{userId}")]
@@ -40,42 +58,63 @@ namespace NotesApp.Controllers
                 CreatorId = userId
             };
 
+            group.Created();
             _context.Group.Add(group);
+
+            await _context.SaveChangesAsync();
+
+            var groupId = group.Id;
+
+            GroupMembership groupMembership = new GroupMembership
+            {
+                UserId = userId,
+                GroupId = groupId
+            };
+
+            groupMembership.Created();
+            _context.GroupMembership.Add(groupMembership);
+
             await _context.SaveChangesAsync();
 
             return Created("", GroupToDto(group));
         }
 
-        [HttpPut("{userId}/{groupId}")]
-
-        public async Task<ActionResult> EditGroup(long userId, long groupId, GroupDto groupDto)
+        [HttpPatch("{userId}/{groupId}")]
+        public async Task<ActionResult> EditGroup(long userId, long groupId, EditGroupDto editGroupDto)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest();
             }
 
-            var userIsFromGroup = _context.GroupMembership
+            var groupMembership = await _context.GroupMembership
                 .Where(u => u.GroupId == groupId && u.UserId == userId)
-                .FirstAsync();
+                .FirstOrDefaultAsync();
 
-            if (userIsFromGroup == null)
+            if (groupMembership == null)
             {
-                return BadRequest();
+                return NotFound();
             }
 
             var group = await _context.Group.FindAsync(groupId);
 
             if (group == null)
-
             {
                 return NotFound();
             }
 
-            group.Name = groupDto.Name;
-            group.Description = groupDto.Description;
+            if (!string.IsNullOrEmpty(editGroupDto.Name))
+            {
+                group.Name = editGroupDto.Name;
+            }
 
-            _context.Group.Add(group);
+            if (!string.IsNullOrEmpty(editGroupDto.Description))
+            {
+                group.Description = editGroupDto.Description;
+            }
+
+            group.Updated();
+            _context.Group.Update(group);
             await _context.SaveChangesAsync();
 
             return Ok(GroupToDto(group));
@@ -85,7 +124,11 @@ namespace NotesApp.Controllers
         public async Task<ActionResult> deleteGroupFromUser(long userId, long groupId)
         {
             var group = await _context.Group
-                .Where(g => g.CreatorId == userId & g.Id == groupId)
+                .Where(g => g.Id == groupId)
+                .FirstOrDefaultAsync();
+
+            var groupMembership = await _context.GroupMembership
+                .Where(gm => gm.GroupId == groupId & gm.UserId == userId)
                 .FirstOrDefaultAsync();
 
             if (group == null)
@@ -93,11 +136,16 @@ namespace NotesApp.Controllers
                 return NotFound();
             }
 
-            _context.Group.Remove(group);
+            if (groupMembership == null)
+            {
+                return NotFound("Group membership not found.");
+            }
+
+            group.Delete();
+            groupMembership.Delete();
             await _context.SaveChangesAsync();
             return Ok(GroupToDto(group));
         }
-
         private static GroupDto GroupToDto(Group group) =>
             new GroupDto
             {

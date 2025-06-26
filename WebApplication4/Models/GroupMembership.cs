@@ -1,11 +1,12 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using NotesApp.Interfaces;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using WebApplication4.Models;
 
 namespace NotesApp.Models
 {
     [Table("group_membership")]
-    public class GroupMembership
+    public class GroupMembership : ISoftDelete
     {
         [Key]
         public long Id { get; private init; }
@@ -25,10 +26,17 @@ namespace NotesApp.Models
         [Column("created_at")]
         public DateTime CreatedAt { get; private set; }
 
+        [Column("is_deleted")]
+        public bool IsDeleted { get; set; }
+
         public void Created()
         {
             CreatedAt = DateTime.UtcNow;
         }
+        public void Delete()
+        {
+            IsDeleted = true;
 
+        }
     }
 }

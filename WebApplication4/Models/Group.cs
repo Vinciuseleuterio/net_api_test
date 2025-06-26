@@ -21,9 +21,12 @@ namespace NotesApp.Models
         public required long CreatorId { get; init; }
 
         [ForeignKey(nameof(CreatorId))]
-        public User User { get; private set; } = null!;
-        public List<User> Users { get; private set; } = [];
-        public List<GroupMembership> GroupMemberships { get; private set; } = [];
+        public User Creator { get; private set; } = null!;
+
+        [NotMapped]
         public List<Note> Notes { get; private set; } = [];
+
+        [NotMapped]
+        public List<GroupMembership> GroupMemberships { get; private set; } = [];
     }
 }

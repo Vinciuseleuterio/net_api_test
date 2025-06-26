@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace NotesApp.Models
 {
-    public class StandardModel
+    public abstract class StandardModel
     {
         [Key]
         public long Id { get; private set; }
@@ -15,7 +15,7 @@ namespace NotesApp.Models
         public DateTime? UpdatedAt { get; private set; }
 
         [Column("is_deleted")]
-        public bool IsDeleted { get; private set; }
+        public bool IsDeleted { get; set; }
 
         public void Delete()
         {

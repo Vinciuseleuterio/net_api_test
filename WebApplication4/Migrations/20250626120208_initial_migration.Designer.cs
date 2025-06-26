@@ -9,11 +9,11 @@ using WebApplication4.Data;
 
 #nullable disable
 
-namespace WebApplication4.Migrations
+namespace NotesApp.Migrations
 {
     [DbContext(typeof(ApplicationContext))]
-    [Migration("20250609135932_improving_relashionships_creating_many_to_many_intermediate")]
-    partial class improving_relashionships_creating_many_to_many_intermediate
+    [Migration("20250626120208_initial_migration")]
+    partial class initial_migration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -33,8 +33,7 @@ namespace WebApplication4.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
+                    b.Property<DateTime?>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
 
@@ -58,8 +57,7 @@ namespace WebApplication4.Migrations
                         .HasColumnType("character varying(50)")
                         .HasColumnName("name");
 
-                    b.Property<DateTime>("UpdatedAt")
-                        .ValueGeneratedOnAddOrUpdate()
+                    b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated_at");
 
@@ -70,7 +68,7 @@ namespace WebApplication4.Migrations
                     b.ToTable("groups");
                 });
 
-            modelBuilder.Entity("WebApplication4.Models.Note", b =>
+            modelBuilder.Entity("NotesApp.Models.GroupMembership", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -79,7 +77,6 @@ namespace WebApplication4.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
 
@@ -91,23 +88,6 @@ namespace WebApplication4.Migrations
                         .HasColumnType("boolean")
                         .HasColumnName("is_deleted");
 
-                    b.Property<string>("Text")
-                        .IsRequired()
-                        .HasMaxLength(1000)
-                        .HasColumnType("character varying(1000)")
-                        .HasColumnName("text");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)")
-                        .HasColumnName("title");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated_at");
-
                     b.Property<long>("UserId")
                         .HasColumnType("bigint")
                         .HasColumnName("user_id");
@@ -117,6 +97,55 @@ namespace WebApplication4.Migrations
                     b.HasIndex("GroupId");
 
                     b.HasIndex("UserId");
+
+                    b.ToTable("group_membership");
+                });
+
+            modelBuilder.Entity("WebApplication4.Models.Note", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("content");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<long>("CreatorId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("creator_id");
+
+                    b.Property<long>("GroupId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("group_id");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_deleted");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("title");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatorId");
+
+                    b.HasIndex("GroupId");
 
                     b.ToTable("notes");
                 });
@@ -134,8 +163,7 @@ namespace WebApplication4.Migrations
                         .HasColumnType("character varying(250)")
                         .HasColumnName("about_me");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
+                    b.Property<DateTime?>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
 
@@ -155,28 +183,30 @@ namespace WebApplication4.Migrations
                         .HasColumnType("character varying(50)")
                         .HasColumnName("name");
 
-                    b.Property<DateTime>("UpdatedAt")
-                        .ValueGeneratedOnAddOrUpdate()
+                    b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("updated_at");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Email")
+                        .IsUnique();
 
                     b.ToTable("users");
                 });
 
             modelBuilder.Entity("NotesApp.Models.Group", b =>
                 {
-                    b.HasOne("WebApplication4.Models.User", "User")
-                        .WithMany("Group")
+                    b.HasOne("WebApplication4.Models.User", "Creator")
+                        .WithMany()
                         .HasForeignKey("CreatorId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("User");
+                    b.Navigation("Creator");
                 });
 
-            modelBuilder.Entity("WebApplication4.Models.Note", b =>
+            modelBuilder.Entity("NotesApp.Models.GroupMembership", b =>
                 {
                     b.HasOne("NotesApp.Models.Group", "Group")
                         .WithMany()
@@ -185,7 +215,7 @@ namespace WebApplication4.Migrations
                         .IsRequired();
 
                     b.HasOne("WebApplication4.Models.User", "User")
-                        .WithMany("Note")
+                        .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -195,11 +225,23 @@ namespace WebApplication4.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("WebApplication4.Models.User", b =>
+            modelBuilder.Entity("WebApplication4.Models.Note", b =>
                 {
+                    b.HasOne("WebApplication4.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("CreatorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("NotesApp.Models.Group", "Group")
+                        .WithMany()
+                        .HasForeignKey("GroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("Group");
 
-                    b.Navigation("Note");
+                    b.Navigation("User");
                 });
 #pragma warning restore 612, 618
         }

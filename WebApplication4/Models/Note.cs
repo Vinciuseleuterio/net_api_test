@@ -1,6 +1,7 @@
 ﻿using NotesApp.Models;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Diagnostics.CodeAnalysis;
 
 namespace WebApplication4.Models
 {
@@ -23,8 +24,9 @@ namespace WebApplication4.Models
         [ForeignKey(nameof(CreatorId))]
         public User User { get; private set; } = null!;
 
+
         [Column("group_id")]
-        public long GroupId { get; init; }
+        public long? GroupId { get; init; }
 
         [ForeignKey(nameof(GroupId))]
         public Group Group { get; private set; } = null!;

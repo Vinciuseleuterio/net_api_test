@@ -2,10 +2,10 @@
 
 #nullable disable
 
-namespace WebApplication4.Migrations
+namespace NotesApp.Migrations
 {
     /// <inheritdoc />
-    public partial class adding_unique_constraint_to_email_field : Migration
+    public partial class defining_group_id_in_note_to_be_nullable : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -22,12 +22,6 @@ namespace WebApplication4.Migrations
                 oldClrType: typeof(long),
                 oldType: "bigint");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_users_email",
-                table: "users",
-                column: "email",
-                unique: true);
-
             migrationBuilder.AddForeignKey(
                 name: "FK_notes_groups_group_id",
                 table: "notes",
@@ -42,10 +36,6 @@ namespace WebApplication4.Migrations
             migrationBuilder.DropForeignKey(
                 name: "FK_notes_groups_group_id",
                 table: "notes");
-
-            migrationBuilder.DropIndex(
-                name: "IX_users_email",
-                table: "users");
 
             migrationBuilder.AlterColumn<long>(
                 name: "group_id",

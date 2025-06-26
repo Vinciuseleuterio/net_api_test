@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using NotesApp.Dto;
 using WebApplication4.Data;
 using WebApplication4.Dto;
@@ -18,35 +19,39 @@ namespace WebApplication4.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<CreateUserDto>> CreateUser(CreateUserDto CreateUserDto)
+        public async Task<ActionResult<CreateUserDto>> CreateUser(CreateUserDto createUserDto)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            if (_context.User.Any(u => u.Email == CreateUserDto.Email))
-            {
-                return Conflict("Email already exists.");
-            }
-
             var user = new User
             {
-                Name = CreateUserDto.Name,
-                Email = CreateUserDto.Email
+                Name = createUserDto.Name,
+                Email = createUserDto.Email
             };
 
-            if (!string.IsNullOrEmpty(CreateUserDto.AboutMe))
+            if (!string.IsNullOrEmpty(createUserDto.AboutMe))
             {
-                user.AboutMe = CreateUserDto.AboutMe;
+                user.AboutMe = createUserDto.AboutMe;
             }
 
             _context.User.Add(user);
             user.Created();
-            await _context.SaveChangesAsync();
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException ex) when (IsUniqueConstraintViolation(ex))
+            {
+                return Conflict("Email already exists.");
+            }
 
             return Created("", UserToDto(user));
         }
+
 
         [HttpGet("{userId}")]
         public async Task<ActionResult<CreateUserDto>> GetUserById(long? userId)
@@ -69,7 +74,8 @@ namespace WebApplication4.Controllers
                 return BadRequest();
             }
 
-            var user = await _context.User.FindAsync(userId);
+            var user = await _context.User
+                .FindAsync(userId);
 
             if (user == null)
             {
@@ -115,5 +121,17 @@ namespace WebApplication4.Controllers
                 Email = user.Email,
                 AboutMe = user.AboutMe
             };
+
+        private bool IsUniqueConstraintViolation(DbUpdateException ex)
+        {
+            if (ex.InnerException?.Message.Contains("UNIQUE") == true ||
+                ex.InnerException?.Message.Contains("duplicar") == true)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
     }
 }

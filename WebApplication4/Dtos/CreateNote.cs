@@ -2,7 +2,7 @@
 
 namespace WebApplication4.Dto
 {
-    public class NoteDto
+    public class CreateNote
     {
         [Required]
         [StringLength(50)]
@@ -10,6 +10,6 @@ namespace WebApplication4.Dto
 
         [Required]
         [StringLength(1000)]
-        public required string Text { get; set; }
+        public required string Content { get; set; }
     }
 }

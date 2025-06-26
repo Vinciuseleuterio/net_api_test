@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using NotesApp.Interfaces;
 using NotesApp.Models;
 using WebApplication4.Models;
 
@@ -32,43 +33,74 @@ namespace WebApplication4.Data
                 .HasQueryFilter(n => !n.IsDeleted);
 
             modelBuilder
+                .Entity<GroupMembership>()
+                .HasQueryFilter(gm => !gm.IsDeleted);
+
+            modelBuilder
                 .Entity<User>()
                 .HasIndex(u => u.Email)
                 .IsUnique();
 
-            // Deleções em cascata na entidade "User"
-
-            modelBuilder.Entity<Group>()
-                .HasOne(g => g.User)
-                .WithMany(u => u.Groups)
-                .HasForeignKey(g => g.CreatorId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            modelBuilder.Entity<GroupMembership>()
-                .HasOne(gm => gm.User)
-                .WithMany(u => u.GroupMemberships)
-                .HasForeignKey(gm => gm.UserId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            modelBuilder.Entity<Note>()
-                .HasOne(n => n.User)
-                .WithMany(u => u.Notes)
-                .HasForeignKey(n => n.CreatorId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            // Deleções em cascata na entidade "Group"
-
-            modelBuilder.Entity<Note>()
-                .HasOne(n => n.Group)
-                .WithMany(g => g.Notes)
-                .HasForeignKey(n => n.GroupId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            modelBuilder.Entity<GroupMembership>()
-                .HasOne(gm => gm.Group)
-                .WithMany(g => g.GroupMemberships)
-                .HasForeignKey(gm => gm.GroupId)
-                .OnDelete(DeleteBehavior.Cascade);
+            base.OnModelCreating(modelBuilder);
         }
+
+        public override int SaveChanges()
+        {
+            HandleSoftDelete();
+            return base.SaveChanges();
+        }
+
+        public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+        {
+            HandleSoftDelete();
+            return await base.SaveChangesAsync(cancellationToken);
+        }
+
+        private void HandleSoftDelete()
+        {
+            var softDeletables = ChangeTracker.Entries()
+                .Where(e => e.State == EntityState.Deleted && e.Entity is ISoftDelete)
+                .ToList();
+
+            foreach (var entry in softDeletables)
+            {
+                entry.State = EntityState.Modified;
+                ((ISoftDelete)entry.Entity).IsDeleted = true;
+
+                CascadeSoftDelete(entry.Entity);
+            }
+        }
+
+        private void CascadeSoftDelete(object entity)
+        {
+            if (entity is User userN)
+            {
+                foreach (var noteUser in userN.Notes)
+                {
+                    if (!noteUser.IsDeleted)
+                        noteUser.IsDeleted = true;
+                }
+            }
+
+            if (entity is Group groupN)
+            {
+                foreach (var noteGroup in groupN.Notes)
+                {
+                    if (!noteGroup.IsDeleted)
+                        noteGroup.IsDeleted = true;
+                }
+            }
+
+            if (entity is Group groupM)
+            {
+                foreach (var groupMembershipGroup in groupM.GroupMemberships)
+                {
+                    if (!groupMembershipGroup.IsDeleted)
+                        groupMembershipGroup.IsDeleted = true;
+                }
+            }
+        }
+
+
     }
 }
