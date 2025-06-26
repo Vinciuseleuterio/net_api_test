@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using WebApplication4.Data;
@@ -11,9 +12,11 @@ using WebApplication4.Data;
 namespace NotesApp.Migrations
 {
     [DbContext(typeof(ApplicationContext))]
-    partial class ApplicationContextModelSnapshot : ModelSnapshot
+    [Migration("20250626120208_initial_migration")]
+    partial class initial_migration
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -120,7 +123,7 @@ namespace NotesApp.Migrations
                         .HasColumnType("bigint")
                         .HasColumnName("creator_id");
 
-                    b.Property<long?>("GroupId")
+                    b.Property<long>("GroupId")
                         .HasColumnType("bigint")
                         .HasColumnName("group_id");
 
@@ -232,7 +235,9 @@ namespace NotesApp.Migrations
 
                     b.HasOne("NotesApp.Models.Group", "Group")
                         .WithMany()
-                        .HasForeignKey("GroupId");
+                        .HasForeignKey("GroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Group");
 
