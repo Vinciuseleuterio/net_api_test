@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using NotesApp.Data.Configurations;
 using NotesApp.Interfaces;
 using NotesApp.Models;
 using WebApplication4.Models;
@@ -20,28 +21,35 @@ namespace WebApplication4.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder
-                .Entity<User>()
-                .HasQueryFilter(u => !u.IsDeleted);
+            //modelBuilder
+            //    .Entity<User>()
+            //    .HasQueryFilter(u => !u.IsDeleted);
 
-            modelBuilder
-                .Entity<Group>()
-                .HasQueryFilter(p => !p.IsDeleted);
+            ////modelBuilder
+            ////    .Entity<Group>()
+            ////    .HasQueryFilter(p => !p.IsDeleted);
 
-            modelBuilder
-                .Entity<Note>()
-                .HasQueryFilter(n => !n.IsDeleted);
+            //modelBuilder
+            //    .Entity<Note>()
+            //    .HasQueryFilter(n => !n.IsDeleted);
 
-            modelBuilder
-                .Entity<GroupMembership>()
-                .HasQueryFilter(gm => !gm.IsDeleted);
+            //modelBuilder
+            //    .Entity<GroupMembership>()
+            //    .HasQueryFilter(gm => !gm.IsDeleted);
 
-            modelBuilder
-                .Entity<User>()
-                .HasIndex(u => u.Email)
-                .IsUnique();
+            //modelBuilder
+            //    .Entity<User>()
+            //    .HasIndex(u => u.Email)
+            //    .IsUnique();
+
+
+            modelBuilder.ApplyConfiguration(new UserConfiguration());
+            modelBuilder.ApplyConfiguration(new GroupConfiguration());
+            modelBuilder.ApplyConfiguration(new NoteConfiguration());
+            modelBuilder.ApplyConfiguration(new GroupMembershipConfiguration());
 
             base.OnModelCreating(modelBuilder);
+
         }
 
         public override int SaveChanges()
@@ -100,7 +108,5 @@ namespace WebApplication4.Data
                 }
             }
         }
-
-
     }
 }
