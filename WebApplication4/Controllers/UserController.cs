@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NotesApp.Dto;
+using NotesApp.Validations;
 using WebApplication4.Data;
 using WebApplication4.Dto;
 using WebApplication4.Models;
@@ -21,16 +22,23 @@ namespace WebApplication4.Controllers
         [HttpPost]
         public async Task<ActionResult<CreateUserDto>> CreateUser(CreateUserDto createUserDto)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
             var user = new User
             {
                 Name = createUserDto.Name,
                 Email = createUserDto.Email
             };
+
+            CreateUserDtoValidator validator = new CreateUserDtoValidator();
+            var result = validator.Validate(createUserDto);
+
+
+            if (!result.IsValid)
+            {
+                foreach (var error in result.Errors)
+                {
+                    return BadRequest("Property: " + error.PropertyName + " Error was: " + error.ErrorMessage);
+                }
+            }
 
             if (!string.IsNullOrEmpty(createUserDto.AboutMe))
             {
@@ -52,11 +60,14 @@ namespace WebApplication4.Controllers
             return Created("", UserToDto(user));
         }
 
+        // Method "createUser" was validated with success
+
 
         [HttpGet("{userId}")]
-        public async Task<ActionResult<CreateUserDto>> GetUserById(long? userId)
+        public async Task<ActionResult<CreateUserDto>> GetUserById(long userId)
         {
-            var user = await _context.User.FindAsync(userId);
+            var user = await _context.User
+                .FindAsync(userId);
 
             if (user == null)
             {
@@ -65,6 +76,9 @@ namespace WebApplication4.Controllers
 
             return Ok(UserToDto(user));
         }
+
+        // For this method to work as intended, we need to implement JWT Authentication since we don`t know witch user is logged in
+        // Only users from the same group should be able to see each other
 
         [HttpPatch("{userId}")]
         public async Task<ActionResult<CreateUserDto>> EditUser(long userId, EditUserDto editUserDto)
@@ -96,23 +110,26 @@ namespace WebApplication4.Controllers
             return Ok(UserToDto(user));
         }
 
+        // For this method to work as intended, we need to implement JWT Authentication since we don`t know witch user is logged in
+
         [HttpDelete("{userId}")]
         public async Task<ActionResult<CreateUserDto>> DeleteUser(long userId)
         {
-            var user = await _context.User.FindAsync(userId);
+            var user = await _context.User
+                .FindAsync(userId);
 
             if (user == null)
             {
                 return NotFound();
             }
 
-
-
             user.Delete();
             await _context.SaveChangesAsync();
 
             return Ok();
         }
+
+        // For this method to work as intended, we need to implement JWT Authentication since we don`t know witch user is logged in
 
         private static CreateUserDto UserToDto(User user) =>
             new CreateUserDto

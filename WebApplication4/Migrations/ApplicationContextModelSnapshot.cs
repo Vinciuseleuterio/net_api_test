@@ -40,8 +40,8 @@ namespace NotesApp.Migrations
 
                     b.Property<string>("Description")
                         .IsRequired()
-                        .HasMaxLength(250)
-                        .HasColumnType("character varying(250)")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
                         .HasColumnName("description");
 
                     b.Property<bool>("IsDeleted")
@@ -50,8 +50,8 @@ namespace NotesApp.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)")
+                        .HasMaxLength(60)
+                        .HasColumnType("character varying(60)")
                         .HasColumnName("name");
 
                     b.Property<DateTime?>("UpdatedAt")
@@ -62,7 +62,7 @@ namespace NotesApp.Migrations
 
                     b.HasIndex("CreatorId");
 
-                    b.ToTable("groups");
+                    b.ToTable("groups", (string)null);
                 });
 
             modelBuilder.Entity("NotesApp.Models.GroupMembership", b =>
@@ -95,7 +95,7 @@ namespace NotesApp.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("group_membership");
+                    b.ToTable("group_membership", (string)null);
                 });
 
             modelBuilder.Entity("WebApplication4.Models.Note", b =>
@@ -108,8 +108,7 @@ namespace NotesApp.Migrations
 
                     b.Property<string>("Content")
                         .IsRequired()
-                        .HasMaxLength(1000)
-                        .HasColumnType("character varying(1000)")
+                        .HasColumnType("text")
                         .HasColumnName("content");
 
                     b.Property<DateTime?>("CreatedAt")
@@ -122,7 +121,7 @@ namespace NotesApp.Migrations
 
                     b.Property<long?>("GroupId")
                         .HasColumnType("bigint")
-                        .HasColumnName("group_id");
+                        .HasColumnName("groupId");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean")
@@ -130,8 +129,8 @@ namespace NotesApp.Migrations
 
                     b.Property<string>("Title")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)")
+                        .HasMaxLength(60)
+                        .HasColumnType("character varying(60)")
                         .HasColumnName("title");
 
                     b.Property<DateTime?>("UpdatedAt")
@@ -144,7 +143,7 @@ namespace NotesApp.Migrations
 
                     b.HasIndex("GroupId");
 
-                    b.ToTable("notes");
+                    b.ToTable("notes", (string)null);
                 });
 
             modelBuilder.Entity("WebApplication4.Models.User", b =>
@@ -166,8 +165,7 @@ namespace NotesApp.Migrations
 
                     b.Property<string>("Email")
                         .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)")
+                        .HasColumnType("text")
                         .HasColumnName("email");
 
                     b.Property<bool>("IsDeleted")
@@ -176,8 +174,8 @@ namespace NotesApp.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)")
+                        .HasMaxLength(60)
+                        .HasColumnType("character varying(60)")
                         .HasColumnName("name");
 
                     b.Property<DateTime?>("UpdatedAt")
@@ -186,16 +184,13 @@ namespace NotesApp.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Email")
-                        .IsUnique();
-
-                    b.ToTable("users");
+                    b.ToTable("users", (string)null);
                 });
 
             modelBuilder.Entity("NotesApp.Models.Group", b =>
                 {
                     b.HasOne("WebApplication4.Models.User", "Creator")
-                        .WithMany()
+                        .WithMany("Groups")
                         .HasForeignKey("CreatorId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -206,13 +201,13 @@ namespace NotesApp.Migrations
             modelBuilder.Entity("NotesApp.Models.GroupMembership", b =>
                 {
                     b.HasOne("NotesApp.Models.Group", "Group")
-                        .WithMany()
+                        .WithMany("GroupMemberships")
                         .HasForeignKey("GroupId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("WebApplication4.Models.User", "User")
-                        .WithMany()
+                        .WithMany("GroupMemberships")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -225,18 +220,34 @@ namespace NotesApp.Migrations
             modelBuilder.Entity("WebApplication4.Models.Note", b =>
                 {
                     b.HasOne("WebApplication4.Models.User", "User")
-                        .WithMany()
+                        .WithMany("Notes")
                         .HasForeignKey("CreatorId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("NotesApp.Models.Group", "Group")
-                        .WithMany()
+                        .WithMany("Notes")
                         .HasForeignKey("GroupId");
 
                     b.Navigation("Group");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("NotesApp.Models.Group", b =>
+                {
+                    b.Navigation("GroupMemberships");
+
+                    b.Navigation("Notes");
+                });
+
+            modelBuilder.Entity("WebApplication4.Models.User", b =>
+                {
+                    b.Navigation("GroupMemberships");
+
+                    b.Navigation("Groups");
+
+                    b.Navigation("Notes");
                 });
 #pragma warning restore 612, 618
         }

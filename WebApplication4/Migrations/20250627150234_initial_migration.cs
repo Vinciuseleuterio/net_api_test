@@ -18,9 +18,9 @@ namespace NotesApp.Migrations
                 {
                     Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    name = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
-                    email = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
-                    about_me = table.Column<string>(type: "character varying(250)", maxLength: 250, nullable: true),
+                    name = table.Column<string>(type: "character varying(60)", maxLength: 60, nullable: false),
+                    email = table.Column<string>(type: "character varying(60)", maxLength: 60, nullable: false),
+                    about_me = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
                     created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     updated_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     is_deleted = table.Column<bool>(type: "boolean", nullable: false)
@@ -36,8 +36,8 @@ namespace NotesApp.Migrations
                 {
                     Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    name = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
-                    description = table.Column<string>(type: "character varying(250)", maxLength: 250, nullable: false),
+                    name = table.Column<string>(type: "character varying(60)", maxLength: 60, nullable: false),
+                    description = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
                     creator_id = table.Column<long>(type: "bigint", nullable: false),
                     created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     updated_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
@@ -88,10 +88,10 @@ namespace NotesApp.Migrations
                 {
                     Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    title = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
-                    content = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: false),
+                    title = table.Column<string>(type: "character varying(60)", maxLength: 60, nullable: false),
+                    content = table.Column<string>(type: "text", nullable: false),
                     creator_id = table.Column<long>(type: "bigint", nullable: false),
-                    group_id = table.Column<long>(type: "bigint", nullable: false),
+                    groupId = table.Column<long>(type: "bigint", nullable: true),
                     created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     updated_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     is_deleted = table.Column<bool>(type: "boolean", nullable: false)
@@ -100,11 +100,10 @@ namespace NotesApp.Migrations
                 {
                     table.PrimaryKey("PK_notes", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_notes_groups_group_id",
-                        column: x => x.group_id,
+                        name: "FK_notes_groups_groupId",
+                        column: x => x.groupId,
                         principalTable: "groups",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_notes_users_creator_id",
                         column: x => x.creator_id,
@@ -134,15 +133,9 @@ namespace NotesApp.Migrations
                 column: "creator_id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_notes_group_id",
+                name: "IX_notes_groupId",
                 table: "notes",
-                column: "group_id");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_users_email",
-                table: "users",
-                column: "email",
-                unique: true);
+                column: "groupId");
         }
 
         /// <inheritdoc />

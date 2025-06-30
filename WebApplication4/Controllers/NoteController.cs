@@ -19,7 +19,7 @@ namespace WebApplication4.Controllers
         }
 
         [HttpGet("{userId}")]
-        public async Task<ActionResult<IEnumerable<CreateNote>>> GetAllNotesFromUser(long? userId)
+        public async Task<ActionResult<IEnumerable<CreateNoteDto>>> GetAllNotesFromUser(long? userId)
         {
             var notes = await _context.Note
                 .Where(note => note.CreatorId == userId)
@@ -34,7 +34,7 @@ namespace WebApplication4.Controllers
         }
 
         [HttpGet("{userId}/{groupId}")]
-        public async Task<ActionResult<IEnumerable<CreateNote>>> GetAllNotesFromGroup(long? userId, long? groupId)
+        public async Task<ActionResult<IEnumerable<CreateNoteDto>>> GetAllNotesFromGroup(long? userId, long? groupId)
         {
 
             var group = await _context.GroupMembership
@@ -54,7 +54,7 @@ namespace WebApplication4.Controllers
         }
 
         [HttpPatch("{userId}/{noteId}")]
-        public async Task<ActionResult<CreateNote>> EditNoteFromUser(long userId, long noteId, EditNoteDto editNoteDto)
+        public async Task<ActionResult<CreateNoteDto>> EditNoteFromUser(long userId, long noteId, EditNoteDto editNoteDto)
         {
             var note = _context.Note
                 .FirstOrDefault(note => note.Id == noteId);
@@ -92,7 +92,7 @@ namespace WebApplication4.Controllers
         }
 
         [HttpPost("{userId}")]
-        public async Task<ActionResult<CreateNote>> CreatePersonalNote(CreateNote noteDto, long userId)
+        public async Task<ActionResult<CreateNoteDto>> CreatePersonalNote(CreateNoteDto noteDto, long userId)
         {
             var user = await _context.User
             .FindAsync(userId);
@@ -122,7 +122,7 @@ namespace WebApplication4.Controllers
         }
 
         [HttpPost("{userId}/{groupId}")]
-        public async Task<ActionResult<CreateNote>> CreateGroupNote(CreateNote noteDto, long userId, long groupId)
+        public async Task<ActionResult<CreateNoteDto>> CreateGroupNote(CreateNoteDto noteDto, long userId, long groupId)
         {
 
             var user = await _context.User
@@ -156,7 +156,7 @@ namespace WebApplication4.Controllers
 
 
         [HttpDelete("{userId}/{noteId}")]
-        public async Task<ActionResult<CreateNote>> DeleteNoteFromUser(long userId, long noteId)
+        public async Task<ActionResult<CreateNoteDto>> DeleteNoteFromUser(long userId, long noteId)
         {
             var note = await _context.Note
                 .Where(note => note.Id == noteId)
@@ -178,8 +178,8 @@ namespace WebApplication4.Controllers
             return Ok();
         }
 
-        private static CreateNote NotesToDto(Note note) =>
-            new CreateNote
+        private static CreateNoteDto NotesToDto(Note note) =>
+            new CreateNoteDto
             {
                 Title = note.Title,
                 Content = note.Content
