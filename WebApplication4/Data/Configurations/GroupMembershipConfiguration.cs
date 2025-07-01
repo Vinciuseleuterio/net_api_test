@@ -10,7 +10,7 @@ namespace NotesApp.Data.Configurations
         {
             builder.ToTable("group_membership");
 
-            builder.HasKey(gm => gm.Id);
+            builder.HasKey(gm => new { gm.UserId, gm.GroupId });
 
             builder.Property(gm => gm.CreatedAt)
                 .IsRequired()
@@ -23,10 +23,12 @@ namespace NotesApp.Data.Configurations
             builder.Property(gm => gm.GroupId)
                 .HasColumnName("group_id");
 
-            builder.HasOne(gm => gm.User)
+            builder
+                .HasOne(gm => gm.User)
                 .WithMany(u => u.GroupMemberships)
                 .HasForeignKey(gm => gm.UserId);
-            builder.HasOne(gm => gm.Group)
+            builder
+                .HasOne(gm => gm.Group)
                 .WithMany(g => g.GroupMemberships)
                 .HasForeignKey(gm => gm.GroupId);
         }
