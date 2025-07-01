@@ -5,7 +5,6 @@ namespace NotesApp.Models
 {
     public class GroupMembership : ISoftDelete
     {
-        public long Id { get; private init; }
         public required long UserId { get; init; }
         public User User { get; private set; } = null!;
         public required long GroupId { get; init; }
