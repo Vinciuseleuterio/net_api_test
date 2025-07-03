@@ -2,9 +2,8 @@
 using NotesApp.Data.Configurations;
 using NotesApp.Interfaces;
 using NotesApp.Models;
-using WebApplication4.Models;
 
-namespace WebApplication4.Data
+namespace NotesApp.Data
 {
     public class
         ApplicationContext : DbContext
@@ -37,10 +36,10 @@ namespace WebApplication4.Data
             //    .Entity<GroupMembership>()
             //    .HasQueryFilter(gm => !gm.IsDeleted);
 
-            //modelBuilder
-            //    .Entity<User>()
-            //    .HasIndex(u => u.Email)
-            //    .IsUnique();
+            modelBuilder
+                .Entity<User>()
+                .HasIndex(u => u.Email)
+                .IsUnique();
 
 
             modelBuilder.ApplyConfiguration(new UserConfiguration());

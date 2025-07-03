@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
-using WebApplication4.Data;
+using Microsoft.OpenApi.Models;
+using NotesApp.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,7 +9,14 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "NotesApp",
+        Version = "v1"
+    });
+});
 DotNetEnv.Env.Load();
 
 // Realiza a conex�o ao banco relacionando os contextos devidos
@@ -21,7 +29,10 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Minha API v1");
+    });
 }
 
 app.UseHttpsRedirection();

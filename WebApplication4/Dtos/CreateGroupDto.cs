@@ -1,14 +1,10 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace NotesApp.Dto
+namespace NotesApp.Dtos
 {
-    public class GroupDto
+    public class CreateGroupDto
     {
-        [Required]
-        [StringLength(50)]
         public required string Name { get; set; }
-
-        [StringLength(250)]
         public string? Description { get; set; }
     }
 }

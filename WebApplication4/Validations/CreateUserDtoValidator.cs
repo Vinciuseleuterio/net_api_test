@@ -1,5 +1,5 @@
 ﻿using FluentValidation;
-using WebApplication4.Dto;
+using NotesApp.Dtos;
 
 namespace NotesApp.Validations;
 

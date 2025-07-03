@@ -1,4 +1,4 @@
-﻿namespace NotesApp.Dto
+﻿namespace NotesApp.Dtos
 {
     public class EditUserDto
     {

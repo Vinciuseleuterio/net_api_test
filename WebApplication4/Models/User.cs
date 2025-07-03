@@ -1,7 +1,7 @@
 ﻿using NotesApp.Interfaces;
-using NotesApp.Models;
+using System.ComponentModel.DataAnnotations.Schema;
 
-namespace WebApplication4.Models
+namespace NotesApp.Models
 {
     public class User : StandardModel, ISoftDelete
     {

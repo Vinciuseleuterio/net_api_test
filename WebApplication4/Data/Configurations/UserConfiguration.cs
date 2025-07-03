@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using WebApplication4.Models;
+using NotesApp.Models;
 
 namespace NotesApp.Data.Configurations
 {

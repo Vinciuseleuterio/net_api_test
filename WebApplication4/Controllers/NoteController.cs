@@ -1,11 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using NotesApp.Data;
 using NotesApp.Dtos;
-using WebApplication4.Data;
-using WebApplication4.Dto;
-using WebApplication4.Models;
+using NotesApp.Models;
 
-namespace WebApplication4.Controllers
+namespace NotesApp.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
@@ -16,6 +15,75 @@ namespace WebApplication4.Controllers
         public NoteController(ApplicationContext context)
         {
             _context = context;
+        }
+
+        [HttpPost("{userId}")]
+        public async Task<ActionResult<CreateNoteDto>> CreatePersonalNote(CreateNoteDto noteDto, long userId)
+        {
+            var user = await _context.User
+            .FindAsync(userId);
+
+            if (user == null)
+            {
+                return BadRequest();
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
+
+            Note note = new Note
+            {
+                Title = noteDto.Title,
+                Content = noteDto.Content,
+                CreatorId = userId
+            };
+
+
+
+            _context.Note.Add(note);
+            note.Created();
+
+            await _context.SaveChangesAsync();
+
+            return Created("", NotesToDto(note));
+        }
+
+        [HttpPost("{userId}/{groupId}")]
+        public async Task<ActionResult<CreateNoteDto>> CreateGroupNote(CreateNoteDto noteDto, long userId, long groupId)
+        {
+
+            var user = await _context.User
+                .FindAsync(userId);
+
+            if (user == null)
+            {
+                return NotFound();
+
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
+
+            Note note = new Note
+            {
+                CreatorId = userId,
+                GroupId = groupId,
+                Title = noteDto.Title,
+                Content = noteDto.Content
+
+                // Validate if content is not null or empty for then assign it
+            };
+
+            _context.Note.Add(note);
+            note.Created();
+
+            await _context.SaveChangesAsync();
+
+            return Created("", NotesToDto(note));
         }
 
         [HttpGet("{userId}")]
@@ -29,26 +97,6 @@ namespace WebApplication4.Controllers
             {
                 return NotFound();
             }
-
-            return Ok(notes.Select(note => NotesToDto(note)));
-        }
-
-        [HttpGet("{userId}/{groupId}")]
-        public async Task<ActionResult<IEnumerable<CreateNoteDto>>> GetAllNotesFromGroup(long? userId, long? groupId)
-        {
-
-            var group = await _context.GroupMembership
-                .Where(userToGroup => userToGroup.GroupId == groupId && userToGroup.UserId == userId)
-                .FirstAsync();
-
-            if (group == null)
-            {
-                NotFound();
-            }
-
-            var notes = await _context.Note.
-                Where(note => note.GroupId == groupId)
-                .ToListAsync();
 
             return Ok(notes.Select(note => NotesToDto(note)));
         }
@@ -86,72 +134,10 @@ namespace WebApplication4.Controllers
 
             _context.Entry(note);
             note.Updated();
+
             await _context.SaveChangesAsync();
 
             return Created();
-        }
-
-        [HttpPost("{userId}")]
-        public async Task<ActionResult<CreateNoteDto>> CreatePersonalNote(CreateNoteDto noteDto, long userId)
-        {
-            var user = await _context.User
-            .FindAsync(userId);
-
-            if (user == null)
-            {
-                return BadRequest();
-            }
-
-            if (!ModelState.IsValid)
-            {
-                return BadRequest();
-            }
-
-            Note note = new Note
-            {
-                Title = noteDto.Title,
-                Content = noteDto.Content,
-                CreatorId = userId
-            };
-
-            _context.Note.Add(note);
-            note.Created();
-            await _context.SaveChangesAsync();
-
-            return Created("", NotesToDto(note));
-        }
-
-        [HttpPost("{userId}/{groupId}")]
-        public async Task<ActionResult<CreateNoteDto>> CreateGroupNote(CreateNoteDto noteDto, long userId, long groupId)
-        {
-
-            var user = await _context.User
-                .FindAsync(userId);
-
-            if (user == null)
-            {
-                return NotFound();
-
-            }
-
-            if (!ModelState.IsValid)
-            {
-                return BadRequest();
-            }
-
-            Note note = new Note
-            {
-                CreatorId = userId,
-                GroupId = groupId,
-                Title = noteDto.Title,
-                Content = noteDto.Content
-            };
-
-            _context.Note.Add(note);
-            note.Created();
-            await _context.SaveChangesAsync();
-
-            return Created("", NotesToDto(note));
         }
 
 
@@ -173,9 +159,31 @@ namespace WebApplication4.Controllers
             }
 
             note.Delete();
+            note.Updated();
+
             await _context.SaveChangesAsync();
 
             return Ok();
+        }
+
+        [HttpGet("{userId}/{groupId}")]
+        public async Task<ActionResult<IEnumerable<CreateNoteDto>>> GetAllNotesFromGroup(long? userId, long? groupId)
+        {
+
+            var group = await _context.GroupMembership
+                .Where(userToGroup => userToGroup.GroupId == groupId && userToGroup.UserId == userId)
+                .FirstAsync();
+
+            if (group == null)
+            {
+                NotFound();
+            }
+
+            var notes = await _context.Note.
+                Where(note => note.GroupId == groupId)
+                .ToListAsync();
+
+            return Ok(notes.Select(note => NotesToDto(note)));
         }
 
         private static CreateNoteDto NotesToDto(Note note) =>

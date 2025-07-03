@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace NotesApp.Migrations
 {
     /// <inheritdoc />
-    public partial class initial_migration : Migration
+    public partial class initial_migration_for_personal_machine : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -19,8 +19,8 @@ namespace NotesApp.Migrations
                     Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     name = table.Column<string>(type: "character varying(60)", maxLength: 60, nullable: false),
-                    email = table.Column<string>(type: "character varying(60)", maxLength: 60, nullable: false),
-                    about_me = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
+                    email = table.Column<string>(type: "text", nullable: false),
+                    about_me = table.Column<string>(type: "character varying(250)", maxLength: 250, nullable: true),
                     created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     updated_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     is_deleted = table.Column<bool>(type: "boolean", nullable: false)
@@ -58,8 +58,6 @@ namespace NotesApp.Migrations
                 name: "group_membership",
                 columns: table => new
                 {
-                    Id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     user_id = table.Column<long>(type: "bigint", nullable: false),
                     group_id = table.Column<long>(type: "bigint", nullable: false),
                     created_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
@@ -67,7 +65,7 @@ namespace NotesApp.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_group_membership", x => x.Id);
+                    table.PrimaryKey("PK_group_membership", x => new { x.user_id, x.group_id });
                     table.ForeignKey(
                         name: "FK_group_membership_groups_group_id",
                         column: x => x.group_id,
@@ -116,11 +114,6 @@ namespace NotesApp.Migrations
                 name: "IX_group_membership_group_id",
                 table: "group_membership",
                 column: "group_id");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_group_membership_user_id",
-                table: "group_membership",
-                column: "user_id");
 
             migrationBuilder.CreateIndex(
                 name: "IX_groups_creator_id",

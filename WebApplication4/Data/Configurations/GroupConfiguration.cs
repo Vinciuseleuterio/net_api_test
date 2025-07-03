@@ -20,6 +20,7 @@ namespace NotesApp.Data.Configurations
             builder.Property(g => g.CreatorId)
                 .HasColumnName("creator_id");
 
+
             builder.HasOne(g => g.Creator)
                 .WithMany(u => u.Groups)
                 .HasForeignKey(g => g.CreatorId);

@@ -3,8 +3,8 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using NotesApp.Data;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
-using WebApplication4.Data;
 
 #nullable disable
 
@@ -17,7 +17,7 @@ namespace NotesApp.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.5")
+                .HasAnnotation("ProductVersion", "9.0.6")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -90,7 +90,7 @@ namespace NotesApp.Migrations
                     b.ToTable("group_membership", (string)null);
                 });
 
-            modelBuilder.Entity("WebApplication4.Models.Note", b =>
+            modelBuilder.Entity("NotesApp.Models.Note", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -138,7 +138,7 @@ namespace NotesApp.Migrations
                     b.ToTable("notes", (string)null);
                 });
 
-            modelBuilder.Entity("WebApplication4.Models.User", b =>
+            modelBuilder.Entity("NotesApp.Models.User", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -176,12 +176,15 @@ namespace NotesApp.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Email")
+                        .IsUnique();
+
                     b.ToTable("users", (string)null);
                 });
 
             modelBuilder.Entity("NotesApp.Models.Group", b =>
                 {
-                    b.HasOne("WebApplication4.Models.User", "Creator")
+                    b.HasOne("NotesApp.Models.User", "Creator")
                         .WithMany("Groups")
                         .HasForeignKey("CreatorId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -198,7 +201,7 @@ namespace NotesApp.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("WebApplication4.Models.User", "User")
+                    b.HasOne("NotesApp.Models.User", "User")
                         .WithMany("GroupMemberships")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -209,9 +212,9 @@ namespace NotesApp.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("WebApplication4.Models.Note", b =>
+            modelBuilder.Entity("NotesApp.Models.Note", b =>
                 {
-                    b.HasOne("WebApplication4.Models.User", "User")
+                    b.HasOne("NotesApp.Models.User", "User")
                         .WithMany("Notes")
                         .HasForeignKey("CreatorId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -233,7 +236,7 @@ namespace NotesApp.Migrations
                     b.Navigation("Notes");
                 });
 
-            modelBuilder.Entity("WebApplication4.Models.User", b =>
+            modelBuilder.Entity("NotesApp.Models.User", b =>
                 {
                     b.Navigation("GroupMemberships");
 

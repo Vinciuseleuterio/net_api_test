@@ -1,5 +1,4 @@
 ﻿using NotesApp.Interfaces;
-using WebApplication4.Models;
 
 namespace NotesApp.Models
 {

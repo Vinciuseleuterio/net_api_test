@@ -1,8 +1,8 @@
-﻿namespace WebApplication4.Dto
+﻿namespace NotesApp.Dtos
 {
     public class CreateNoteDto
     {
         public required string Title { get; set; }
-        public required string Content { get; set; }
+        public string? Content { get; set; }
     }
 }

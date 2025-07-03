@@ -1,11 +1,9 @@
-﻿using WebApplication4.Models;
-
-namespace NotesApp.Models
+﻿namespace NotesApp.Models
 {
     public class Group : StandardModel
     {
         public required string Name { get; set; }
-        public required string Description { get; set; }
+        public string? Description { get; set; }
         public required long CreatorId { get; init; }
         public User Creator { get; private set; } = null!;
         public List<Note> Notes { get; private set; } = [];

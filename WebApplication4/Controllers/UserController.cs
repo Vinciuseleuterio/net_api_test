@@ -1,12 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using NotesApp.Dto;
+using NotesApp.Data;
+using NotesApp.Dtos;
+using NotesApp.Models;
 using NotesApp.Validations;
-using WebApplication4.Data;
-using WebApplication4.Dto;
-using WebApplication4.Models;
 
-namespace WebApplication4.Controllers
+namespace NotesApp.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
@@ -36,9 +35,11 @@ namespace WebApplication4.Controllers
             {
                 foreach (var error in result.Errors)
                 {
-                    return BadRequest("Property: " + error.PropertyName + " Error was: " + error.ErrorMessage);
+                    return BadRequest("Property: " + error.PropertyName + "\nError was: " + error.ErrorMessage);
                 }
             }
+
+            // Pass the error message this way, so we can see the property that caused the error
 
             if (!string.IsNullOrEmpty(createUserDto.AboutMe))
             {
@@ -81,11 +82,19 @@ namespace WebApplication4.Controllers
         // Only users from the same group should be able to see each other
 
         [HttpPatch("{userId}")]
-        public async Task<ActionResult<CreateUserDto>> EditUser(long userId, EditUserDto editUserDto)
+        public async Task<ActionResult<EditUserDto>> EditUser(long userId, EditUserDto editUserDto)
         {
-            if (!ModelState.IsValid)
+
+
+            EditUserDtoValidator validator = new EditUserDtoValidator();
+            var result = validator.Validate(editUserDto);
+
+            if (!result.IsValid)
             {
-                return BadRequest();
+                foreach (var error in result.Errors)
+                {
+                    return BadRequest("Property: " + error.PropertyName + "\nError was: " + error.ErrorMessage);
+                }
             }
 
             var user = await _context.User
@@ -103,8 +112,8 @@ namespace WebApplication4.Controllers
             }
 
             user.AboutMe = editUserDto.AboutMe;
-
             user.Updated();
+
             await _context.SaveChangesAsync();
 
             return Ok(UserToDto(user));
@@ -113,7 +122,7 @@ namespace WebApplication4.Controllers
         // For this method to work as intended, we need to implement JWT Authentication since we don`t know witch user is logged in
 
         [HttpDelete("{userId}")]
-        public async Task<ActionResult<CreateUserDto>> DeleteUser(long userId)
+        public async Task<ActionResult> DeleteUser(long userId)
         {
             var user = await _context.User
                 .FindAsync(userId);
@@ -124,6 +133,7 @@ namespace WebApplication4.Controllers
             }
 
             user.Delete();
+            user.Updated();
             await _context.SaveChangesAsync();
 
             return Ok();
@@ -131,11 +141,10 @@ namespace WebApplication4.Controllers
 
         // For this method to work as intended, we need to implement JWT Authentication since we don`t know witch user is logged in
 
-        private static CreateUserDto UserToDto(User user) =>
-            new CreateUserDto
+        private static EditUserDto UserToDto(User user) =>
+            new EditUserDto
             {
                 Name = user.Name,
-                Email = user.Email,
                 AboutMe = user.AboutMe
             };
 

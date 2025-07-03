@@ -1,10 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using NotesApp.Dto;
+using NotesApp.Data;
 using NotesApp.Dtos;
 using NotesApp.Models;
-using WebApplication4.Data;
-using WebApplication4.Models;
+using NotesApp.Validations;
 
 namespace NotesApp.Controllers
 {
@@ -20,28 +19,20 @@ namespace NotesApp.Controllers
             _context = applicationContext;
         }
 
-
-        [HttpGet("{userId}")]
-        public async Task<ActionResult<IEnumerable<GroupDto>>> getGroupsFromUser(long userId)
-        {
-            var group = await _context.Group
-                .Where(g => g.CreatorId == userId)
-                .ToListAsync();
-
-            if (group.Count == 0)
-            {
-                return NotFound();
-            }
-
-            return Ok(group.Select(g => GroupToDto(g)));
-        }
-
         [HttpPost("{userId}")]
-        public async Task<ActionResult> createGroup(long userId, GroupDto groupDto)
+        public async Task<ActionResult> createGroup(long userId, CreateGroupDto createGroupDto)
         {
-            if (!ModelState.IsValid)
+
+            CreateGroupDtoValidator validator = new CreateGroupDtoValidator();
+            var result = validator.Validate(createGroupDto);
+
+
+            if (!result.IsValid)
             {
-                return BadRequest("");
+                foreach (var error in result.Errors)
+                {
+                    return BadRequest("Property: " + error.PropertyName + "\nError was: " + error.ErrorMessage);
+                }
             }
 
             var user = await _context.User.FindAsync(userId);
@@ -53,13 +44,13 @@ namespace NotesApp.Controllers
 
             Group group = new Group
             {
-                Name = groupDto.Name,
-                Description = groupDto.Description,
-                CreatorId = userId
+                Name = createGroupDto.Name,
+                CreatorId = userId,
+                Description = createGroupDto.Description
             };
 
-            group.Created();
             _context.Group.Add(group);
+            group.Created();
 
             await _context.SaveChangesAsync();
 
@@ -82,9 +73,15 @@ namespace NotesApp.Controllers
         [HttpPatch("{userId}/{groupId}")]
         public async Task<ActionResult> EditGroup(long userId, long groupId, EditGroupDto editGroupDto)
         {
-            if (!ModelState.IsValid)
+            EditGroupDtoValidator validator = new EditGroupDtoValidator();
+            var result = validator.Validate(editGroupDto);
+
+            if (!result.IsValid)
             {
-                return BadRequest();
+                foreach (var error in result.Errors)
+                {
+                    return BadRequest("Property: " + error.PropertyName + "\nError was: " + error.ErrorMessage);
+                }
             }
 
             var groupMembership = await _context.GroupMembership
@@ -113,8 +110,9 @@ namespace NotesApp.Controllers
                 group.Description = editGroupDto.Description;
             }
 
-            group.Updated();
             _context.Group.Update(group);
+            group.Updated();
+
             await _context.SaveChangesAsync();
 
             return Ok(GroupToDto(group));
@@ -143,11 +141,28 @@ namespace NotesApp.Controllers
 
             group.Delete();
             groupMembership.Delete();
+            group.Updated();
+            
             await _context.SaveChangesAsync();
-            return Ok(GroupToDto(group));
+            return Ok();
         }
-        private static GroupDto GroupToDto(Group group) =>
-            new GroupDto
+
+        [HttpGet("{userId}")]
+        public async Task<ActionResult> getGroupsFromUser(long userId)
+        {
+            var group = await _context.Group
+                .Where(g => g.CreatorId == userId)
+                .ToListAsync();
+
+            if (group.Count == 0)
+            {
+                return NotFound();
+            }
+
+            return Ok(group.Select(g => GroupToDto(g)));
+        }
+        private static CreateGroupDto GroupToDto(Group group) =>
+            new CreateGroupDto
             {
                 Description = group.Description,
                 Name = group.Name,

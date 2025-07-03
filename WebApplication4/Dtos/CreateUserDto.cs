@@ -1,4 +1,4 @@
-﻿namespace WebApplication4.Dto
+﻿namespace NotesApp.Dtos
 {
     public class CreateUserDto
     {
