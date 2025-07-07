@@ -1,13 +1,16 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
-using NotesApp.Data;
+using NotesApp.Application.Services;
+using NotesApp.Domain.Interfaces;
+using NotesApp.Infrastructure.Data;
+using NotesApp.Infrastructure.Repositories;
+using FluentValidation;
+using NotesApp.Application.Validators;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
@@ -17,21 +20,45 @@ builder.Services.AddSwaggerGen(c =>
         Version = "v1"
     });
 });
+
 DotNetEnv.Env.Load();
 
-// Realiza a conex�o ao banco relacionando os contextos devidos
+// Register database context
+
 builder.Services.AddDbContext<ApplicationContext>(o =>
     o.UseNpgsql(Environment.GetEnvironmentVariable("CONNECTION_STRING_DB")));
 
+// Register Services and Repositories
+builder.Services.AddScoped<UserService>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+
+builder.Services.AddScoped<NoteService>();
+builder.Services.AddScoped<INoteRepository, NoteRepository>();
+
+builder.Services.AddScoped<GroupService>();
+builder.Services.AddScoped<IGroupRepository, GroupRepository>();
+
+// Register FluentValidation validators
+builder.Services.AddValidatorsFromAssemblyContaining<CreateUserDtoValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<EditUserDtoValidator>();
+
+builder.Services.AddValidatorsFromAssemblyContaining<EditNoteDtoValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<CreateNoteDtoValidator>();
+
+builder.Services.AddValidatorsFromAssemblyContaining<CreateGroupDtoValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<EditGroupDtoValidator>();
+
+
+// Don`t forget to scope other classes in the program.cs
+
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI(c =>
     {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Minha API v1");
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "NotesApp v1");
     });
 }
 
