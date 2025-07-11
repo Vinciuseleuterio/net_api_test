@@ -2,8 +2,8 @@
 {
     public class CreateUserDto
     {
-        public required string Name { get; set; }
         public required string Email { get; init; }
+        public required string Name { get; set; }
         public string? AboutMe { get; set; }
     }
 }

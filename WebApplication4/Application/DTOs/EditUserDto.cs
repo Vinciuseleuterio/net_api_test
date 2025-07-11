@@ -2,7 +2,7 @@
 {
     public class EditUserDto
     {
-        public string? Name { get; init; }
+        public required string Name { get; set; }
         public string? AboutMe { get; set; }
     }
 }

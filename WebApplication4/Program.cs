@@ -42,8 +42,8 @@ builder.Services.AddScoped<IGroupRepository, GroupRepository>();
 builder.Services.AddValidatorsFromAssemblyContaining<CreateUserDtoValidator>();
 builder.Services.AddValidatorsFromAssemblyContaining<EditUserDtoValidator>();
 
-builder.Services.AddValidatorsFromAssemblyContaining<EditNoteDtoValidator>();
-builder.Services.AddValidatorsFromAssemblyContaining<CreateNoteDtoValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<NoteDtoValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<NoteDtoValidator>();
 
 builder.Services.AddValidatorsFromAssemblyContaining<CreateGroupDtoValidator>();
 builder.Services.AddValidatorsFromAssemblyContaining<EditGroupDtoValidator>();

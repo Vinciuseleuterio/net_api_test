@@ -1,8 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using FluentValidation;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NotesApp.Application.DTOs;
+using NotesApp.Application.Services;
 using NotesApp.Domain.Models;
-using NotesApp.Infrastructure.Data;
 
 namespace NotesApp.API.Controllers
 {
@@ -10,184 +11,162 @@ namespace NotesApp.API.Controllers
     [ApiController]
     public class NoteController : ControllerBase
     {
-        private readonly ApplicationContext _context;
+        private readonly NoteService _service;
 
-        public NoteController(ApplicationContext context)
+        public NoteController(
+            NoteService service)
         {
-            _context = context;
+            _service = service;
         }
 
         [HttpPost("{userId}")]
-        public async Task<ActionResult<CreateNoteDto>> CreatePersonalNote(CreateNoteDto noteDto, long userId)
+        public async Task<ActionResult> CreatePersonalNote(NoteDto noteDto, long userId)
         {
-            var user = await _context.User
-            .FindAsync(userId);
-
-            if (user == null)
+            try
             {
-                return BadRequest();
+                var note = await _service
+                    .CreatePersonalNote(noteDto, userId);
+
+                return Created("", NoteToDto(note));
             }
-
-            if (!ModelState.IsValid)
+            catch (ValidationException ex)
             {
-                return BadRequest();
+                return BadRequest(new { error = "Validation failed", details = ex.Errors });
             }
-
-            Note note = new Note
+            catch (ArgumentException ex)
             {
-                Title = noteDto.Title,
-                Content = noteDto.Content,
-                CreatorId = userId
-            };
-
-
-
-            _context.Note.Add(note);
-            note.Created();
-
-            await _context.SaveChangesAsync();
-
-            return Created("", NotesToDto(note));
+                return BadRequest(ex.Message);
+            }
+            catch (DbUpdateException ex)
+            {
+                return StatusCode(500, "Error saving in the database: " + ex.Message);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "Internal Error");
+            }
         }
 
         [HttpPost("{userId}/{groupId}")]
-        public async Task<ActionResult<CreateNoteDto>> CreateGroupNote(CreateNoteDto noteDto, long userId, long groupId)
+        public async Task<ActionResult> CreateGroupNote(NoteDto noteDto, long userId, long groupId)
         {
-
-            var user = await _context.User
-                .FindAsync(userId);
-
-            if (user == null)
+            try
             {
-                return NotFound();
+                var note = await _service
+                    .CreateGroupNote(noteDto, userId, groupId);
 
+                return Created("", NoteToDto(note));
             }
-
-            if (!ModelState.IsValid)
+            catch (ValidationException ex)
             {
-                return BadRequest();
+                return BadRequest(new { error = "Validation failed", details = ex.Errors });
             }
-
-            Note note = new Note
+            catch (ArgumentException ex)
             {
-                CreatorId = userId,
-                GroupId = groupId,
-                Title = noteDto.Title,
-                Content = noteDto.Content
-
-                // Validate if content is not null or empty for then assign it
-            };
-
-            _context.Note.Add(note);
-            note.Created();
-
-            await _context.SaveChangesAsync();
-
-            return Created("", NotesToDto(note));
+                return BadRequest(ex.Message);
+            }
+            catch (DbUpdateException ex)
+            {
+                return StatusCode(500, "Error saving in the database: " + ex.Message);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "Internal Error");
+            }
         }
 
         [HttpGet("{userId}")]
-        public async Task<ActionResult<IEnumerable<CreateNoteDto>>> GetAllNotesFromUser(long? userId)
+        public async Task<ActionResult<IEnumerable<NoteDto>>> GetAllNotesFromUser(long userId)
         {
-            var notes = await _context.Note
-                .Where(note => note.CreatorId == userId)
-                .ToListAsync();
-
-            if (notes.Count == 0)
+            try
             {
-                return NotFound();
+                var notes = await _service
+                    .GetAllNotesFromUser(userId);
+
+                return Ok(notes
+                    .Select(notes => NoteToDto(notes)));
             }
-
-            return Ok(notes.Select(note => NotesToDto(note)));
-        }
-
-        [HttpPatch("{userId}/{noteId}")]
-        public async Task<ActionResult<CreateNoteDto>> EditNoteFromUser(long userId, long noteId, EditNoteDto editNoteDto)
-        {
-            var note = _context.Note
-                .FirstOrDefault(note => note.Id == noteId);
-
-            if (note == null)
+            catch (ArgumentException ex)
             {
-                return NotFound();
+                return BadRequest(ex.Message);
             }
-
-            if (note.CreatorId != userId)
+            catch (Exception)
             {
-                return BadRequest("Nota não pertence ao usuário");
+                return StatusCode(500, "Internal Error");
             }
-
-            if (!ModelState.IsValid)
-            {
-                return BadRequest();
-            }
-
-            if (!string.IsNullOrEmpty(editNoteDto.Title))
-            {
-                note.Title = editNoteDto.Title;
-            }
-
-            if (!string.IsNullOrEmpty(editNoteDto.Content))
-            {
-                note.Content = editNoteDto.Content;
-            }
-
-            _context.Entry(note);
-            note.Updated();
-
-            await _context.SaveChangesAsync();
-
-            return Created();
-        }
-
-
-        [HttpDelete("{userId}/{noteId}")]
-        public async Task<ActionResult<CreateNoteDto>> DeleteNoteFromUser(long userId, long noteId)
-        {
-            var note = await _context.Note
-                .Where(note => note.Id == noteId)
-                .FirstOrDefaultAsync();
-
-            if (note == null)
-            {
-                return NotFound();
-            }
-
-            if (userId != note.CreatorId)
-            {
-                return Forbid();
-            }
-
-            note.Delete();
-            note.Updated();
-
-            await _context.SaveChangesAsync();
-
-            return Ok();
         }
 
         [HttpGet("{userId}/{groupId}")]
-        public async Task<ActionResult<IEnumerable<CreateNoteDto>>> GetAllNotesFromGroup(long? userId, long? groupId)
+        public async Task<ActionResult<IEnumerable<NoteDto>>> GetAllNotesFromGroup(long userId, long groupId)
         {
-
-            var group = await _context.GroupMembership
-                .Where(userToGroup => userToGroup.GroupId == groupId && userToGroup.UserId == userId)
-                .FirstAsync();
-
-            if (group == null)
+            try
             {
-                NotFound();
+                var notes = await _service
+                    .GetAllNotesFromGroup(userId, groupId);
+
+                return Ok(notes
+                    .Select(notes => NoteToDto(notes)));
             }
-
-            var notes = await _context.Note.
-                Where(note => note.GroupId == groupId)
-                .ToListAsync();
-
-            return Ok(notes.Select(note => NotesToDto(note)));
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "Internal Error");
+            }
         }
 
-        private static CreateNoteDto NotesToDto(Note note) =>
-            new CreateNoteDto
+        [HttpPatch("{userId}/{noteId}")]
+        public async Task<ActionResult<NoteDto>> UpdateNote(NoteDto noteDto, long userId, long noteId)
+        {
+            try
+            {
+                var note = await _service
+                    .UpdateNote(noteDto, userId, noteId);
+
+                return Ok(NoteToDto(note));
+            }
+            catch (ValidationException ex)
+            {
+                return BadRequest(new { error = "Validation failed", details = ex.Errors });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (DbUpdateException ex)
+            {
+                return StatusCode(500, "Error saving in the database: " + ex.Message);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "Internal Error");
+            }
+        }
+
+        [HttpDelete("{userId}/{noteId}")]
+        public async Task<ActionResult> DeleteNote(long userId, long noteId)
+        {
+            try
+            {
+                await _service
+                    .DeleteNote(userId, noteId);
+
+                return Ok();
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "Internal Error");
+            }
+        }
+
+        private static NoteDto NoteToDto(Note note) =>
+            new NoteDto
             {
                 Title = note.Title,
                 Content = note.Content

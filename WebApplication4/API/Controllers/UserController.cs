@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using NotesApp.Application.DTOs;
 using NotesApp.Application.Services;
 using NotesApp.Domain.Models;
+using FluentValidation;
 
 namespace NotesApp.API.Controllers
 {
@@ -21,43 +22,95 @@ namespace NotesApp.API.Controllers
         [HttpPost]
         public async Task<ActionResult> CreateUser(CreateUserDto createUserDto)
         {
+            try
+            {
+                var user = await _service
+                    .CreateUser(createUserDto);
 
-            var user = await _service.AddUserAsync(createUserDto);
-
-            return Created("", UserToDto(user));
+                return Created("User: " + user.Id + " was created with success", UserToDto(user));
+            }
+            catch (ValidationException ex)
+            {
+                return BadRequest(new { error = "Validation failed", details = ex.Errors });
+            }
+            catch (DbUpdateException ex)
+            {
+                return StatusCode(500, "Error saving in the database: " + ex.Message);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "Internal Error");
+            }
         }
-
 
         [HttpGet("{userId}")]
         public async Task<ActionResult> GetUserById(long userId)
         {
-            var user = await _service.GetUserByIdAsync(userId);
+            try
+            {
+                var user = await _service
+                    .GetUserById(userId);
 
-            return Ok(UserToDto(user));
+                return Ok(UserToDto(user));
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "Internal Error");
+            }
         }
-
-        // For this method to work as intended, we need to implement JWT Authentication since we don`t know witch user is logged in
-        // Only users from the same group should be able to see each other
 
         [HttpPatch("{userId}")]
-        public async Task<ActionResult<EditUserDto>> EditUser(long userId, EditUserDto editUserDto)
+        public async Task<ActionResult> UpdateUser(EditUserDto editUserDto, long userId)
         {
-            var user = await _service.UpdateUserAsync(userId, editUserDto);
 
-            return Ok(UserToDto(user));
+            try
+            {
+                var user = await _service
+                    .UpdateUser(editUserDto, userId);
+
+                return Ok(UserToDto(user));
+            }
+            catch (ValidationException ex)
+            {
+                return BadRequest(new { error = "Validation failed", details = ex.Errors });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (DbUpdateException ex)
+            {
+                return StatusCode(500, "Error saving in the database: " + ex.Message);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "Internal Error");
+            }
         }
-
-        // For this method to work as intended, we need to implement JWT Authentication since we don`t know witch user is logged in
 
         [HttpDelete("{userId}")]
         public async Task<ActionResult> DeleteUser(long userId)
         {
-            await _service.DeleteUserAsync(userId);
+            try
+            {
+                await _service
+                    .DeleteUserAsync(userId);
 
-            return Ok("User Deleted");
+                return Ok("User Deleted");
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "Internal Error");
+            }
         }
-
-        // For this method to work as intended, we need to implement JWT Authentication since we don`t know witch user is logged in
 
         private static EditUserDto UserToDto(User user) =>
             new EditUserDto
@@ -65,19 +118,5 @@ namespace NotesApp.API.Controllers
                 Name = user.Name,
                 AboutMe = user.AboutMe
             };
-
-        // This DTO conversion should be on the service layer
-
-        private bool IsUniqueConstraintViolation(DbUpdateException ex)
-        {
-            if (ex.InnerException?.Message.Contains("UNIQUE") == true ||
-                ex.InnerException?.Message.Contains("duplicar") == true)
-            {
-                return true;
-            }
-
-            return false;
-        }
-
     }
 }

@@ -3,7 +3,7 @@ using NotesApp.Application.DTOs;
 
 namespace NotesApp.Application.Validators
 {
-    public class EditNoteDtoValidator : AbstractValidator<EditNoteDto>
+    public class EditNoteDtoValidator : AbstractValidator<NoteDto>
     {
         public EditNoteDtoValidator()
         {

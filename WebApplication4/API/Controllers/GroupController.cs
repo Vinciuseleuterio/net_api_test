@@ -142,7 +142,7 @@ namespace NotesApp.API.Controllers
             group.Delete();
             groupMembership.Delete();
             group.Updated();
-            
+
             await _context.SaveChangesAsync();
             return Ok();
         }

@@ -8,6 +8,7 @@ namespace NotesApp.Application.Validators
         public EditUserDtoValidator()
         {
             RuleFor(user => user.Name)
+                .NotNull().NotEmpty().WithMessage("Name is required.")
                 .MaximumLength(60).WithMessage("Name must not exceed 60 characters.");
 
             RuleFor(user => user.AboutMe)

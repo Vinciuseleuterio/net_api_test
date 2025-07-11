@@ -20,18 +20,13 @@ namespace NotesApp.Application.Services
             _editValidator = ediValidator;
         }
 
-        public async Task<User> AddUserAsync(CreateUserDto createUserDto)
+        public async Task<User> CreateUser(CreateUserDto createUserDto)
         {
 
-            var result = _createValidator.Validate(createUserDto);
+            var result = _createValidator
+                .Validate(createUserDto);
 
-            if (!result.IsValid)
-            {
-                foreach (var error in result.Errors)
-                {
-                    Console.WriteLine("Property: " + error.PropertyName + "\nError was: " + error.ErrorMessage);
-                }
-            }
+            if (!result.IsValid) throw new ValidationException(result.Errors);
 
             User user = new User
 
@@ -43,60 +38,37 @@ namespace NotesApp.Application.Services
             if (!string.IsNullOrEmpty(createUserDto.AboutMe))
             {
                 user.AboutMe = createUserDto.AboutMe;
-            }   
+            }
 
-            await _repo.AddUserAsync(user);
+            user.Created();
 
-            return user;
+            return await _repo
+                .CreateUser(user);
         }
 
-        public async Task<User> GetUserByIdAsync(long userId)
+        public async Task<User> GetUserById(long userId)
         {
-            var user = await _repo.GetUserByIdAsync(userId);
-
-            if (user == null)
-            {
-                throw new Exception("User not found");
-            }
-
-            return user;
+            return await _repo
+                .GetUserById(userId);
         }
 
-        public async Task<User> UpdateUserAsync(long userId, EditUserDto editUserDto)
+        public async Task<User> UpdateUser(EditUserDto editUserDto, long userId)
         {
-            if (editUserDto == null) throw new ArgumentNullException(nameof(editUserDto));
+            var result = _editValidator
+                .Validate(editUserDto);
 
-            var result =  _editValidator.Validate(editUserDto);
+            if (!result.IsValid) throw new ValidationException(result.Errors);
 
-            if (!result.IsValid)
-            {
-                foreach (var error in result.Errors)
-                {
-                    Console.WriteLine("Property: " + error.PropertyName + "\nError was: " + error.ErrorMessage);
-                }
-            }
-
-            var user = _repo.UpdateUserAsync(userId, editUserDto);
-
-            if (user == null)
-            {
-                Console.WriteLine("User not found.");
-            }
-
-            return await user;
+            return await _repo
+                .UpdateUser(editUserDto, userId);
         }
 
         public async Task DeleteUserAsync(long userId)
         {
-            if (userId <= 0 ) throw new ArgumentException("Invalid user ID", nameof(userId));
-
-            await _repo.DeleteUserAsync(userId);
-        }
-
-        public async Task<bool> UserExistsAsync(long userId)
-        {
             if (userId <= 0) throw new ArgumentException("Invalid user ID", nameof(userId));
-            return await _repo.UserExistsAsync(userId);
+
+            await _repo
+                .DeleteUserAsync(userId);
         }
     }
 }

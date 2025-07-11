@@ -15,62 +15,75 @@ namespace NotesApp.Infrastructure.Repositories
             _context = context;
         }
 
-        public async Task<User?> GetUserByIdAsync(long userId)
+        public async Task<User> CreateUser(User user)
         {
-            return await _context.User.FindAsync(userId);
-        }
+            _context.User
+                .Add(user);
 
-        public async Task AddUserAsync(User user)
-        {
-            if (user == null) throw new ArgumentNullException(nameof(user));
+            await _context
+                .SaveChangesAsync();
 
-            _context.User.Add(user);
-            user.Created();
+            var createdUser = await ExistingUser(user.Id);
 
-            await _context.SaveChangesAsync();
-        }
-
-        public async Task<User?> UpdateUserAsync(long userId, EditUserDto editUserDto)
-        {
-            if (editUserDto == null) throw new ArgumentNullException(nameof(editUserDto));
-
-            var existingUser = await _context.User
-                .FindAsync(userId);
-
-            if (existingUser == null)
+            if (createdUser == null)
             {
-                Console.WriteLine("User not found");
+                throw new DbUpdateException("Error saving user: " + user.Id + " in the database");
             }
 
-            existingUser.Name = editUserDto.Name;
-            existingUser.AboutMe = editUserDto.AboutMe;
+            return createdUser;
+        }
 
-            _context.User.Update(existingUser);
-            existingUser.Updated();
+        public async Task<User> GetUserById(long userId)
+        {
+            var user = await ExistingUser(userId);
 
-            await _context.SaveChangesAsync();
+            return user;
+        }
 
-            return existingUser;
+        public async Task<User> UpdateUser(EditUserDto editUserDto, long userId)
+        {
+            var user = await ExistingUser(userId);
+
+            user.Name = editUserDto.Name;
+            user.AboutMe = editUserDto.AboutMe;
+
+            user.Updated();
+
+            if (_context.User.Update(user) == null)
+            {
+                throw new DbUpdateException("Error saving user: " + user.Id + " in the database");
+            }
+
+            await _context
+                .SaveChangesAsync();
+
+            return user;
         }
 
         public async Task DeleteUserAsync(long userId)
         {
-            if (userId <= 0) throw new ArgumentException("Invalid user ID", nameof(userId));
-
-            var user = await GetUserByIdAsync(userId);
-
-            if (user == null) return; // User not found, nothing to delete
+            var user = await ExistingUser(userId);
 
             user.Delete();
             user.Updated();
 
-            await _context.SaveChangesAsync();
+            await _context
+                .SaveChangesAsync();
         }
 
-        public async Task<bool> UserExistsAsync(long userId)
+        public async Task<User> ExistingUser(long userId)
         {
             if (userId <= 0) throw new ArgumentException("Invalid user ID", nameof(userId));
-            return await _context.User.AnyAsync(u => u.Id == userId);
+
+            var user = await _context.User
+                .FindAsync(userId);
+
+            if (user == null)
+            {
+                throw new ArgumentException("User not found");
+            }
+
+            return user;
         }
     }
 }

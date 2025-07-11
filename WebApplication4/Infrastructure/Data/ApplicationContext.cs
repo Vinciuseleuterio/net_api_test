@@ -2,12 +2,15 @@
 using NotesApp.Domain.Interfaces;
 using NotesApp.Domain.Models;
 using NotesApp.Infrastructure.Data.Configurations;
+using System.Reflection;
 
 namespace NotesApp.Infrastructure.Data
 {
     public class
         ApplicationContext : DbContext
     {
+
+        private static readonly Assembly _assembly = typeof(ApplicationContext).Assembly;
         public ApplicationContext(DbContextOptions<ApplicationContext> options) :
             base(options)
         {
@@ -42,10 +45,13 @@ namespace NotesApp.Infrastructure.Data
                 .IsUnique();
 
 
-            modelBuilder.ApplyConfiguration(new UserConfiguration());
-            modelBuilder.ApplyConfiguration(new GroupConfiguration());
-            modelBuilder.ApplyConfiguration(new NoteConfiguration());
-            modelBuilder.ApplyConfiguration(new GroupMembershipConfiguration());
+            //modelBuilder.ApplyConfiguration(new UserConfiguration());
+            //modelBuilder.ApplyConfiguration(new GroupConfiguration());
+            //modelBuilder.ApplyConfiguration(new NoteConfiguration());
+            //modelBuilder.ApplyConfiguration(new GroupMembershipConfiguration());
+
+
+            modelBuilder.ApplyConfigurationsFromAssembly(_assembly);
 
             base.OnModelCreating(modelBuilder);
 
