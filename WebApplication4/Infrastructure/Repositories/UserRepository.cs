@@ -27,7 +27,7 @@ namespace NotesApp.Infrastructure.Repositories
 
             if (createdUser == null)
             {
-                throw new DbUpdateException("Error saving user: " + user.Id + " in the database");
+                throw new DbUpdateException("Error saving user in the database");
             }
 
             return createdUser;
@@ -47,11 +47,11 @@ namespace NotesApp.Infrastructure.Repositories
             user.Name = editUserDto.Name;
             user.AboutMe = editUserDto.AboutMe;
 
-            user.Updated();
+            user.SetUpdatedAt();
 
             if (_context.User.Update(user) == null)
             {
-                throw new DbUpdateException("Error saving user: " + user.Id + " in the database");
+                throw new DbUpdateException("Error saving user in the database");
             }
 
             await _context
@@ -64,8 +64,8 @@ namespace NotesApp.Infrastructure.Repositories
         {
             var user = await ExistingUser(userId);
 
-            user.Delete();
-            user.Updated();
+            user.SetIsDeleted();
+            user.SetUpdatedAt();
 
             await _context
                 .SaveChangesAsync();

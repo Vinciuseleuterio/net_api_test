@@ -3,9 +3,9 @@ using NotesApp.Application.DTOs;
 
 namespace NotesApp.Application.Validators
 {
-    public class CreateGroupDtoValidator : AbstractValidator<CreateGroupDto>
+    public class GroupDtoValidator : AbstractValidator<GroupDto>
     {
-        public CreateGroupDtoValidator()
+        public GroupDtoValidator()
         {
             RuleFor(group => group.Name)
                 .NotEmpty().NotNull().WithMessage("Name is required.")

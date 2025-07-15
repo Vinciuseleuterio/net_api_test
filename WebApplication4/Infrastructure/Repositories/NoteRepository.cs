@@ -19,7 +19,7 @@ namespace NotesApp.Infrastructure.Repositories
         {
             if (await ExistingUser(userId) == null) throw new ArgumentException("User not found");
 
-            if (_context.Note.Add(note) == null) throw new DbUpdateException("Error saving note: " + note.Id + " in the database");
+            if (_context.Note.Add(note) == null) throw new DbUpdateException("Error saving note in the database");
 
             await _context
                 .SaveChangesAsync();
@@ -33,15 +33,10 @@ namespace NotesApp.Infrastructure.Repositories
                  .Where(gmp => gmp.UserId == userId & gmp.GroupId == groupId)
                  .FirstOrDefaultAsync();
 
-            if (groupMembership == null)
-            {
-                throw new ArgumentException("Group Membership not found");
-            }
+            if (groupMembership == null) throw new ArgumentException("Group Membership not found");
 
-            if (_context.Add(note) == null)
-            {
-                throw new DbUpdateException("Error saving note: " + note.Id + " in the database");
-            }
+            if (_context.Add(note) == null) throw new DbUpdateException("Error saving note in the database");
+
 
             await _context
                 .SaveChangesAsync();
@@ -55,10 +50,8 @@ namespace NotesApp.Infrastructure.Repositories
                 .Where(note => note.CreatorId == userId)
                 .ToListAsync();
 
-            if (notes.Count == 0)
-            {
-                throw new ArgumentException("Note(s) doesn't exist");
-            }
+            if (notes.Count == 0) throw new ArgumentException("Note(s) doesn't exist");
+
 
             return notes;
         }
@@ -69,19 +62,13 @@ namespace NotesApp.Infrastructure.Repositories
                 .Where(gmp => gmp.UserId == userId && gmp.GroupId == groupId)
                 .ToListAsync();
 
-            if (groupMembership == null)
-            {
-                throw new ArgumentException("Group Membership not found");
-            }
+            if (groupMembership == null) throw new ArgumentException("Group Membership not found");
 
             var notes = await _context.Note
                 .Where(note => note.GroupId == groupId)
                 .ToListAsync();
 
-            if (notes == null)
-            {
-                throw new ArgumentException("Note(s) doesn't exist");
-            }
+            if (notes == null) throw new ArgumentException("Note(s) doesn't exist");
 
             return notes;
         }
@@ -90,20 +77,14 @@ namespace NotesApp.Infrastructure.Repositories
         {
             var note = await ExistingNote(noteId);
 
-            if (note == null)
-            {
-                throw new ArgumentException("Note doesn't exist");
-            }
+            if (note == null) throw new ArgumentException("Note doesn't exist");
 
-            if (note.CreatorId != userId)
-            {
-                throw new ArgumentException("Note doesn't belong to user");
-            }
+            if (note.CreatorId != userId) throw new ArgumentException("Note doesn't belong to user");
 
             note.Title = noteDto.Title;
             note.Content = noteDto.Content;
 
-            note.Updated();
+            note.SetUpdatedAt();
 
             await _context
                 .SaveChangesAsync();
@@ -115,18 +96,12 @@ namespace NotesApp.Infrastructure.Repositories
         {
             var note = await ExistingNote(noteId);
 
-            if (note == null)
-            {
-                throw new ArgumentException("Note doesn't exist");
-            }
+            if (note == null) throw new ArgumentException("Note doesn't exist");
 
-            if (note.CreatorId != userId)
-            {
-                throw new ArgumentException("Note doesn't belong to user");
-            }
+            if (note.CreatorId != userId) throw new ArgumentException("Note doesn't belong to user");
 
-            note.Delete();
-            note.Updated();
+            note.SetIsDeleted();
+            note.SetUpdatedAt();
 
             await _context
                 .SaveChangesAsync();
@@ -139,10 +114,7 @@ namespace NotesApp.Infrastructure.Repositories
             var user = await _context.User
                 .FindAsync(userId);
 
-            if (user == null)
-            {
-                throw new ArgumentException("User not found");
-            }
+            if (user == null) throw new ArgumentException("User not found");
 
             return user;
         }
@@ -155,10 +127,7 @@ namespace NotesApp.Infrastructure.Repositories
             var note = await _context.Note
                 .FindAsync(noteId);
 
-            if (note == null)
-            {
-                throw new ArgumentException("Note doesn't exist");
-            }
+            if (note == null) throw new ArgumentException("Note doesn't exist");
 
             return note;
         }

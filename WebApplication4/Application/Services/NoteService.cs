@@ -7,11 +7,11 @@ namespace NotesApp.Application.Services
 {
     public class NoteService
     {
-        private readonly IValidator<NoteDto> _noteDtoValidator;
         private readonly INoteRepository _repo;
+        private readonly IValidator<NoteDto> _noteDtoValidator;
 
-        public NoteService(IValidator<NoteDto> noteDtoValidator,
-            INoteRepository repo)
+        public NoteService(INoteRepository repo,
+            IValidator<NoteDto> noteDtoValidator)
         {
             _repo = repo;
             _noteDtoValidator = noteDtoValidator;
@@ -34,7 +34,7 @@ namespace NotesApp.Application.Services
                 CreatorId = userId
             };
 
-            note.Created();
+            note.SetCreatedAt();
 
             return await _repo
                 .CreatePersonalNote(note, userId);
@@ -58,7 +58,7 @@ namespace NotesApp.Application.Services
                 GroupId = groupId
             };
 
-            note.Created();
+            note.SetCreatedAt();
 
             return await _repo
                 .CreateGroupNote(note, userId, groupId);

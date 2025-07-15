@@ -17,20 +17,19 @@ namespace NotesApp.Domain.Models
         [Column("is_deleted")]
         public bool IsDeleted { get; set; }
 
-        public void Delete()
+        public void SetIsDeleted()
         {
             IsDeleted = true;
         }
 
-        public void Created()
+        public void SetCreatedAt()
         {
             CreatedAt = DateTime.UtcNow;
         }
 
-        public void Updated()
+        public void SetUpdatedAt()
         {
             UpdatedAt = DateTime.UtcNow;
-
         }
     }
 }

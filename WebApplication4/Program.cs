@@ -41,13 +41,8 @@ builder.Services.AddScoped<IGroupRepository, GroupRepository>();
 // Register FluentValidation validators
 builder.Services.AddValidatorsFromAssemblyContaining<CreateUserDtoValidator>();
 builder.Services.AddValidatorsFromAssemblyContaining<EditUserDtoValidator>();
-
 builder.Services.AddValidatorsFromAssemblyContaining<NoteDtoValidator>();
-builder.Services.AddValidatorsFromAssemblyContaining<NoteDtoValidator>();
-
-builder.Services.AddValidatorsFromAssemblyContaining<CreateGroupDtoValidator>();
-builder.Services.AddValidatorsFromAssemblyContaining<EditGroupDtoValidator>();
-
+builder.Services.AddValidatorsFromAssemblyContaining<GroupDtoValidator>();
 
 // Don`t forget to scope other classes in the program.cs
 

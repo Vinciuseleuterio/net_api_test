@@ -40,7 +40,7 @@ namespace NotesApp.Application.Services
                 user.AboutMe = createUserDto.AboutMe;
             }
 
-            user.Created();
+            user.SetCreatedAt();
 
             return await _repo
                 .CreateUser(user);

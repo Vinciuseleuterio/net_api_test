@@ -11,11 +11,11 @@ namespace NotesApp.Domain.Models
         public DateTime CreatedAt { get; private set; }
         public bool IsDeleted { get; set; }
 
-        public void Created()
+        public void SetCreatedAt()
         {
             CreatedAt = DateTime.UtcNow;
         }
-        public void Delete()
+        public void SetDeletedAt()
         {
             IsDeleted = true;
 

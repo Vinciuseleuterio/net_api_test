@@ -1,7 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using FluentValidation;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NotesApp.Application.DTOs;
-using NotesApp.Application.Validators;
+using NotesApp.Application.Services;
 using NotesApp.Domain.Models;
 using NotesApp.Infrastructure.Data;
 
@@ -13,156 +14,119 @@ namespace NotesApp.API.Controllers
     {
 
         private readonly ApplicationContext _context;
+        private readonly GroupService _service;
 
-        public GroupController(ApplicationContext applicationContext)
+        public GroupController(ApplicationContext applicationContext,
+            GroupService service)
         {
             _context = applicationContext;
+            _service = service;
         }
 
         [HttpPost("{userId}")]
-        public async Task<ActionResult> createGroup(long userId, CreateGroupDto createGroupDto)
+        public async Task<ActionResult> createGroup(long userId, GroupDto createGroupDto)
         {
-
-            CreateGroupDtoValidator validator = new CreateGroupDtoValidator();
-            var result = validator.Validate(createGroupDto);
-
-
-            if (!result.IsValid)
+            try
             {
-                foreach (var error in result.Errors)
-                {
-                    return BadRequest("Property: " + error.PropertyName + "\nError was: " + error.ErrorMessage);
-                }
+                await _service.CreateGroup(createGroupDto, userId);
+                return Ok();
             }
-
-            var user = await _context.User.FindAsync(userId);
-
-            if (user == null)
+            catch (ValidationException ex)
             {
-                return NotFound();
+                return BadRequest(new { error = "Validation failed", details = ex.Errors });
             }
-
-            Group group = new Group
+            catch (DbUpdateException ex)
             {
-                Name = createGroupDto.Name,
-                CreatorId = userId,
-                Description = createGroupDto.Description
-            };
-
-            _context.Group.Add(group);
-            group.Created();
-
-            await _context.SaveChangesAsync();
-
-            var groupId = group.Id;
-
-            GroupMembership groupMembership = new GroupMembership
-            {
-                UserId = userId,
-                GroupId = groupId
-            };
-
-            groupMembership.Created();
-            _context.GroupMembership.Add(groupMembership);
-
-            await _context.SaveChangesAsync();
-
-            return Created("", GroupToDto(group));
-        }
-
-        [HttpPatch("{userId}/{groupId}")]
-        public async Task<ActionResult> EditGroup(long userId, long groupId, EditGroupDto editGroupDto)
-        {
-            EditGroupDtoValidator validator = new EditGroupDtoValidator();
-            var result = validator.Validate(editGroupDto);
-
-            if (!result.IsValid)
-            {
-                foreach (var error in result.Errors)
-                {
-                    return BadRequest("Property: " + error.PropertyName + "\nError was: " + error.ErrorMessage);
-                }
+                return StatusCode(500, "Error saving in the database: " + ex.Message);
             }
-
-            var groupMembership = await _context.GroupMembership
-                .Where(u => u.GroupId == groupId && u.UserId == userId)
-                .FirstOrDefaultAsync();
-
-            if (groupMembership == null)
+            catch (Exception)
             {
-                return NotFound();
+                return StatusCode(500, "Internal Error");
             }
-
-            var group = await _context.Group.FindAsync(groupId);
-
-            if (group == null)
-            {
-                return NotFound();
-            }
-
-            if (!string.IsNullOrEmpty(editGroupDto.Name))
-            {
-                group.Name = editGroupDto.Name;
-            }
-
-            if (!string.IsNullOrEmpty(editGroupDto.Description))
-            {
-                group.Description = editGroupDto.Description;
-            }
-
-            _context.Group.Update(group);
-            group.Updated();
-
-            await _context.SaveChangesAsync();
-
-            return Ok(GroupToDto(group));
-        }
-
-        [HttpDelete("{userId}/{groupId}")]
-        public async Task<ActionResult> deleteGroupFromUser(long userId, long groupId)
-        {
-            var group = await _context.Group
-                .Where(g => g.Id == groupId)
-                .FirstOrDefaultAsync();
-
-            var groupMembership = await _context.GroupMembership
-                .Where(gm => gm.GroupId == groupId & gm.UserId == userId)
-                .FirstOrDefaultAsync();
-
-            if (group == null)
-            {
-                return NotFound();
-            }
-
-            if (groupMembership == null)
-            {
-                return NotFound("Group membership not found.");
-            }
-
-            group.Delete();
-            groupMembership.Delete();
-            group.Updated();
-
-            await _context.SaveChangesAsync();
-            return Ok();
         }
 
         [HttpGet("{userId}")]
-        public async Task<ActionResult> getGroupsFromUser(long userId)
+        public async Task<ActionResult> GetGroupsFromUser(long userId)
         {
-            var group = await _context.Group
-                .Where(g => g.CreatorId == userId)
-                .ToListAsync();
+            try
 
-            if (group.Count == 0)
             {
-                return NotFound();
-            }
+                var groups = await _service
+                    .GetGroupsFromUser(userId);
 
-            return Ok(group.Select(g => GroupToDto(g)));
+                return Ok(groups.Select(g => GroupToDto(g)));
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "Internal Error");
+            }
         }
-        private static CreateGroupDto GroupToDto(Group group) =>
-            new CreateGroupDto
+
+        [HttpGet("{userId}/{groupId}")]
+
+        public async Task<ActionResult> GetGroupById(long userId, long groupId)
+        {
+            try
+            {
+                var group = await _service
+                    .GetGroupById(userId, groupId);
+
+                return Ok(GroupToDto(group));
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "Internal Error");
+            }
+        }
+
+        [HttpPatch("{userId}/{groupId}")]
+        public async Task<ActionResult> UpdateGroup(GroupDto groupDto, long userId, long groupId)
+        {
+
+            try
+            {
+                var group = await _service
+                     .UpdateGroup(groupDto, userId, groupId);
+
+                return Ok(GroupToDto(group));
+            }
+            catch (ValidationException ex)
+            {
+                return BadRequest(new { error = "Validation failed", details = ex.Errors });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (DbUpdateException ex)
+            {
+                return StatusCode(500, "Error saving in the database: " + ex.Message);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "Internal Error");
+            }
+        }
+
+        [HttpDelete("{userId}/{groupId}")]
+        public async Task<ActionResult> DeleteGroup(long userId, long groupId)
+        {
+            await _service
+                .DeleteGroup(userId, groupId);
+
+            return Ok();
+        }
+
+        private static GroupDto GroupToDto(Group group) =>
+            new GroupDto
             {
                 Description = group.Description,
                 Name = group.Name,
