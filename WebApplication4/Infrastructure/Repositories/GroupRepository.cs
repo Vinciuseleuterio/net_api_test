@@ -1,5 +1,4 @@
-﻿using Microsoft.CodeAnalysis.Operations;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using NotesApp.Application.DTOs;
 using NotesApp.Domain.Interfaces;
 using NotesApp.Domain.Models;

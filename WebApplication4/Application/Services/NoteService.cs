@@ -64,6 +64,13 @@ namespace NotesApp.Application.Services
                 .CreateGroupNote(note, userId, groupId);
         }
 
+        public async Task<Note> GetNoteById (long userId, long noteId) 
+        {
+            return await _repo
+                .GetNoteById(userId, noteId);
+        }
+
+
         public async Task<IEnumerable<Note>> GetAllNotesFromUser(long userId)
         {
             return await _repo

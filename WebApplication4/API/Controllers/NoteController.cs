@@ -75,6 +75,26 @@ namespace NotesApp.API.Controllers
             }
         }
 
+        [HttpGet("user/{userId}/{noteId}")]
+        public async Task<ActionResult<IEnumerable<NoteDto>>> GetNoteById(long userId, long noteId)
+        {
+            try
+            {
+                var note = await _service
+                    .GetNoteById(userId, noteId);
+
+                return Ok(note);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "Internal Error");
+            }
+        }
+
         [HttpGet("{userId}")]
         public async Task<ActionResult<IEnumerable<NoteDto>>> GetAllNotesFromUser(long userId)
         {
@@ -153,7 +173,7 @@ namespace NotesApp.API.Controllers
                 await _service
                     .DeleteNote(userId, noteId);
 
-                return Ok();
+                return Ok("Note was deleted");
             }
             catch (ArgumentException ex)
             {

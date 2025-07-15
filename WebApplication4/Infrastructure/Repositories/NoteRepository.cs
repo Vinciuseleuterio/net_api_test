@@ -29,17 +29,30 @@ namespace NotesApp.Infrastructure.Repositories
 
         public async Task<Note> CreateGroupNote(Note note, long userId, long groupId)
         {
-            var groupMembership = _context.GroupMembership
+            var groupMembership = await _context.GroupMembership
                  .Where(gmp => gmp.UserId == userId & gmp.GroupId == groupId)
-                 .FirstOrDefaultAsync();
+                 .FirstAsync();
 
             if (groupMembership == null) throw new ArgumentException("Group Membership not found");
 
-            if (_context.Add(note) == null) throw new DbUpdateException("Error saving note in the database");
-
+            if (_context.Note.Add(note) == null) throw new DbUpdateException("Error saving note in the database");
 
             await _context
                 .SaveChangesAsync();
+
+            return note;
+        }
+
+        public async Task<Note> GetNoteById(long userId, long noteId) 
+        {
+            await ExistingUser(userId);
+
+            var note = await _context.Note
+                .FindAsync(noteId);
+
+            if (note == null) throw new ArgumentException("Note dosn't exist");
+
+            if (note.CreatorId != userId) throw new ArgumentException("Note doesn't belong to user");
 
             return note;
         }
@@ -51,7 +64,6 @@ namespace NotesApp.Infrastructure.Repositories
                 .ToListAsync();
 
             if (notes.Count == 0) throw new ArgumentException("Note(s) doesn't exist");
-
 
             return notes;
         }
