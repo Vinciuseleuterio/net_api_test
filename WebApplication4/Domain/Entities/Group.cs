@@ -1,4 +1,4 @@
-﻿namespace NotesApp.Domain.Models
+﻿namespace NotesApp.Domain.Entities
 {
     public class Group : StandardModel
     {

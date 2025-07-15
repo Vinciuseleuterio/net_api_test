@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using NotesApp.Domain.Models;
+using NotesApp.Domain.Entities;
 
 namespace NotesApp.Infrastructure.Data.Configurations
 {

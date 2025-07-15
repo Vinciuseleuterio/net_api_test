@@ -1,5 +1,5 @@
 ﻿using NotesApp.Application.DTOs;
-using NotesApp.Domain.Models;
+using NotesApp.Domain.Entities;
 
 namespace NotesApp.Domain.Interfaces
 {

@@ -1,8 +1,8 @@
 ﻿using FluentValidation;
 using Microsoft.EntityFrameworkCore.Update.Internal;
 using NotesApp.Application.DTOs;
+using NotesApp.Domain.Entities;
 using NotesApp.Domain.Interfaces;
-using NotesApp.Domain.Models;
 using NotesApp.Infrastructure.Repositories;
 using System.Security.Cryptography.X509Certificates;
 

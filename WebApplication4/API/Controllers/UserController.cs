@@ -2,8 +2,8 @@
 using Microsoft.EntityFrameworkCore;
 using NotesApp.Application.DTOs;
 using NotesApp.Application.Services;
-using NotesApp.Domain.Models;
 using FluentValidation;
+using NotesApp.Domain.Entities;
 
 namespace NotesApp.API.Controllers
 {

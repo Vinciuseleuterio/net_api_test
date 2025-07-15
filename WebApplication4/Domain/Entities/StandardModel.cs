@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace NotesApp.Domain.Models
+namespace NotesApp.Domain.Entities
 {
     public abstract class StandardModel
     {

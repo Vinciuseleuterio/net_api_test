@@ -1,6 +1,6 @@
 ﻿using NotesApp.Domain.Interfaces;
 
-namespace NotesApp.Domain.Models
+namespace NotesApp.Domain.Entities
 {
     public class GroupMembership : ISoftDelete
     {

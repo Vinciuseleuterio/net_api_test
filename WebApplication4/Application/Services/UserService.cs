@@ -1,7 +1,7 @@
 ﻿using FluentValidation;
 using NotesApp.Application.DTOs;
+using NotesApp.Domain.Entities;
 using NotesApp.Domain.Interfaces;
-using NotesApp.Domain.Models;
 
 namespace NotesApp.Application.Services
 {
