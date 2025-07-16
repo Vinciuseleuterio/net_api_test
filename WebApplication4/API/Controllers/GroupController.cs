@@ -4,7 +4,6 @@ using Microsoft.EntityFrameworkCore;
 using NotesApp.Application.DTOs;
 using NotesApp.Application.Services;
 using NotesApp.Domain.Entities;
-using NotesApp.Infrastructure.Data;
 
 namespace NotesApp.API.Controllers
 {
@@ -13,13 +12,10 @@ namespace NotesApp.API.Controllers
     public class GroupController : ControllerBase
     {
 
-        private readonly ApplicationContext _context;
         private readonly GroupService _service;
 
-        public GroupController(ApplicationContext applicationContext,
-            GroupService service)
+        public GroupController(GroupService service)
         {
-            _context = applicationContext;
             _service = service;
         }
 

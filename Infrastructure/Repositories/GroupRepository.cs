@@ -1,0 +1,119 @@
+﻿using Microsoft.EntityFrameworkCore;
+using NotesApp.Application.DTOs;
+using NotesApp.Domain.Entities;
+using NotesApp.Domain.Interfaces;
+using NotesApp.Infrastructure.Data;
+
+namespace NotesApp.Infrastructure.Repositories
+{
+    public class GroupRepository : IGroupRepository
+    {
+        private readonly ApplicationContext _context;
+
+        public GroupRepository(ApplicationContext context)
+        {
+            _context = context;
+        }
+
+        public async Task<Group> CreateGroup(Group group, long userId)
+        {
+            await ExistingUser(userId);
+
+            if (_context.Group.Add(group) == null) throw new DbUpdateException("Error saving note in the database");
+
+            group.SetCreatedAt();
+
+            await _context
+                .SaveChangesAsync();
+
+            GroupMembership groupMembership = new GroupMembership
+            {
+                UserId = userId,
+                GroupId = group.Id
+            };
+
+            if (_context.GroupMembership.Add(groupMembership) == null) throw new DbUpdateException("Error saving Group Memberhsip on database");
+
+            groupMembership.SetCreatedAt();
+
+            await _context
+                .SaveChangesAsync();
+
+            return group;
+        }
+
+        public async Task<Group> GetGroupById(long userId, long groupId)
+        {
+            await ExistingUser(userId);
+
+            var group = await _context.Group
+                .FindAsync(groupId);
+
+            if (group == null) throw new ArgumentException("Group not found");
+
+            return group;
+        }
+
+        public async Task<IEnumerable<Group>> GetGroupsFromUser(long userId)
+        {
+            await ExistingUser(userId);
+
+            var groups = await _context.Group
+                .Where(g => g.CreatorId == userId)
+                .ToListAsync();
+
+            if (groups.Count == 0) throw new ArgumentException("Group(s) not found");
+
+            return groups;
+        }
+
+        public async Task<Group> UpdateGroup(GroupDto groupDto, long userId, long groupId)
+        {
+            await ExistingUser(userId);
+
+            var group = await _context.Group
+                .FindAsync(groupId);
+
+            if (group == null) throw new ArgumentException("Group not found");
+
+            group.Name = groupDto.Name;
+            group.Description = groupDto.Description;
+
+            group.SetUpdatedAt();
+
+            if (_context.Group.Update(group) == null) throw new DbUpdateException("Error saving Group in the database");
+
+            await _context
+                .SaveChangesAsync();
+
+            return group;
+        }
+
+        public async Task DeleteGroup(long userId, long groupId)
+        {
+            await ExistingUser(userId);
+
+            var group = await _context.Group
+                .FindAsync(groupId);
+
+            if (group == null) throw new ArgumentException("Group not found");
+
+            group.SetIsDeleted();
+
+            await _context.SaveChangesAsync();
+        }
+
+
+        public async Task<User> ExistingUser(long userId)
+        {
+            if (userId <= 0) throw new ArgumentException("Invalid user ID", nameof(userId));
+
+            var user = await _context.User
+                .FindAsync(userId);
+
+            if (user == null) throw new ArgumentException("User not found");
+
+            return user;
+        }
+    }
+}
