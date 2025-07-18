@@ -1,5 +1,4 @@
-﻿using NotesApp.Application.DTOs;
-using NotesApp.Domain.Entities;
+﻿using NotesApp.Domain.Entities;
 
 namespace NotesApp.Domain.Interfaces
 {
@@ -7,7 +6,7 @@ namespace NotesApp.Domain.Interfaces
     {
         Task<User> CreateUser(User user);
         Task<User> GetUserById(long userId);
-        Task<User> UpdateUser(EditUserDto editUserDto, long userId);
+        Task<User> UpdateUser(User user, long userId);
         Task DeleteUserAsync(long userId);
         Task<User> ExistingUser(long userId);
     }

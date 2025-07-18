@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using NotesApp.Application.DTOs;
 using NotesApp.Domain.Entities;
 using NotesApp.Domain.Interfaces;
 using NotesApp.Infrastructure.Data;
@@ -67,20 +66,8 @@ namespace NotesApp.Infrastructure.Repositories
             return groups;
         }
 
-        public async Task<Group> UpdateGroup(GroupDto groupDto, long userId, long groupId)
+        public async Task<Group> UpdateGroup(Group group, long userId, long groupId)
         {
-            await ExistingUser(userId);
-
-            var group = await _context.Group
-                .FindAsync(groupId);
-
-            if (group == null) throw new ArgumentException("Group not found");
-
-            group.Name = groupDto.Name;
-            group.Description = groupDto.Description;
-
-            group.SetUpdatedAt();
-
             if (_context.Group.Update(group) == null) throw new DbUpdateException("Error saving Group in the database");
 
             await _context
@@ -114,6 +101,18 @@ namespace NotesApp.Infrastructure.Repositories
             if (user == null) throw new ArgumentException("User not found");
 
             return user;
+        }
+
+        public async Task<Group> ExistingGroup(long groupId)
+        {
+            if (groupId <= 0) throw new ArgumentException("Invalid group ID", nameof(groupId));
+
+            var group = await _context.Group
+                .FindAsync(groupId);
+
+            if (group == null) throw new ArgumentException("Group not found");
+
+            return group;
         }
     }
 }

@@ -1,8 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using NotesApp.Application.DTOs;
 using NotesApp.Domain.Entities;
 using NotesApp.Domain.Interfaces;
 using NotesApp.Infrastructure.Data;
+
 
 namespace NotesApp.Infrastructure.Repositories
 {
@@ -40,23 +40,12 @@ namespace NotesApp.Infrastructure.Repositories
             return user;
         }
 
-        public async Task<User> UpdateUser(EditUserDto editUserDto, long userId)
+        public async Task<User> UpdateUser(User user, long userId)
         {
-            var user = await ExistingUser(userId);
-
-            user.Name = editUserDto.Name;
-            user.AboutMe = editUserDto.AboutMe;
-
-            user.SetUpdatedAt();
-
-            if (_context.User.Update(user) == null)
-            {
-                throw new DbUpdateException("Error saving user in the database");
-            }
+            if (_context.User.Update(user) == null) throw new DbUpdateException("Error updating user in the database");
 
             await _context
                 .SaveChangesAsync();
-
             return user;
         }
 

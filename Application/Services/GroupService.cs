@@ -1,10 +1,7 @@
 ﻿using FluentValidation;
-using Microsoft.EntityFrameworkCore.Update.Internal;
 using NotesApp.Application.DTOs;
 using NotesApp.Domain.Entities;
 using NotesApp.Domain.Interfaces;
-using NotesApp.Infrastructure.Repositories;
-using System.Security.Cryptography.X509Certificates;
 
 namespace NotesApp.Application.Services
 {
@@ -60,8 +57,16 @@ namespace NotesApp.Application.Services
 
             if (!result.IsValid) throw new ValidationException(result.Errors);
 
+            var group = await _repo
+                .ExistingGroup(groupId);
+
+            group.Name = groupDto.Name;
+            group.Description = groupDto.Description;
+
+            group.SetUpdatedAt();
+
             return await _repo
-                .UpdateGroup(groupDto, userId, groupId);
+                .UpdateGroup(group, userId, groupId);
         }
 
         public async Task DeleteGroup(long userId, long groupId)

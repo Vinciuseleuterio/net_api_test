@@ -20,12 +20,14 @@ namespace NotesApp.API.Controllers
         }
 
         [HttpPost("{userId}")]
-        public async Task<ActionResult> createGroup(long userId, GroupDto createGroupDto)
+        public async Task<ActionResult> CreateGroup(long userId, GroupDto createGroupDto)
         {
             try
             {
-                await _service.CreateGroup(createGroupDto, userId);
-                return Ok();
+                var group = await _service
+                    .CreateGroup(createGroupDto, userId);
+
+                return Ok(GroupToDto(group));
             }
             catch (ValidationException ex)
             {

@@ -64,7 +64,7 @@ namespace NotesApp.Application.Services
                 .CreateGroupNote(note, userId, groupId);
         }
 
-        public async Task<Note> GetNoteById (long userId, long noteId) 
+        public async Task<Note> GetNoteById(long userId, long noteId)
         {
             return await _repo
                 .GetNoteById(userId, noteId);
@@ -85,8 +85,17 @@ namespace NotesApp.Application.Services
 
         public async Task<Note> UpdateNote(NoteDto noteDto, long userId, long noteId)
         {
+            var note = await _repo
+                .ExistingNote(noteId);
+
+            note.Title = noteDto.Title;
+            note.Content = noteDto.Content;
+
+            note.SetUpdatedAt();
+
             return await _repo
-                .UpdateNote(noteDto, userId, noteId);
+                .UpdateNote(note, userId, noteId);
+
         }
 
         public async Task DeleteNote(long userId, long noteId)

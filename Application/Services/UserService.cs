@@ -59,8 +59,16 @@ namespace NotesApp.Application.Services
 
             if (!result.IsValid) throw new ValidationException(result.Errors);
 
+            var user = await _repo
+                .ExistingUser(userId);
+
+            user.Name = editUserDto.Name;
+            user.AboutMe = editUserDto.AboutMe;
+
+            user.SetUpdatedAt();
+
             return await _repo
-                .UpdateUser(editUserDto, userId);
+                .UpdateUser(user, userId);
         }
 
         public async Task DeleteUserAsync(long userId)

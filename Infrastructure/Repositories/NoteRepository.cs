@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using NotesApp.Application.DTOs;
 using NotesApp.Domain.Entities;
 using NotesApp.Domain.Interfaces;
 using NotesApp.Infrastructure.Data;
@@ -43,7 +42,7 @@ namespace NotesApp.Infrastructure.Repositories
             return note;
         }
 
-        public async Task<Note> GetNoteById(long userId, long noteId) 
+        public async Task<Note> GetNoteById(long userId, long noteId)
         {
             await ExistingUser(userId);
 
@@ -59,6 +58,8 @@ namespace NotesApp.Infrastructure.Repositories
 
         public async Task<IEnumerable<Note>> GetAllNotesFromUser(long userId)
         {
+            await ExistingUser(userId);
+
             var notes = await _context.Note
                 .Where(note => note.CreatorId == userId)
                 .ToListAsync();
@@ -85,18 +86,11 @@ namespace NotesApp.Infrastructure.Repositories
             return notes;
         }
 
-        public async Task<Note> UpdateNote(NoteDto noteDto, long userId, long noteId)
+        public async Task<Note> UpdateNote(Note note, long userId, long noteId)
         {
-            var note = await ExistingNote(noteId);
-
-            if (note == null) throw new ArgumentException("Note doesn't exist");
-
             if (note.CreatorId != userId) throw new ArgumentException("Note doesn't belong to user");
 
-            note.Title = noteDto.Title;
-            note.Content = noteDto.Content;
-
-            note.SetUpdatedAt();
+            if (_context.Note.Update(note) == null) throw new DbUpdateException("Error saving in the database");
 
             await _context
                 .SaveChangesAsync();
