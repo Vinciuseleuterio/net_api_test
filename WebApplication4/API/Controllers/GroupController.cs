@@ -1,6 +1,4 @@
-﻿using FluentValidation;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Mvc;
 using NotesApp.Application.DTOs;
 using NotesApp.Application.Services;
 using NotesApp.Domain.Entities;
@@ -22,96 +20,41 @@ namespace NotesApp.API.Controllers
         [HttpPost("{userId}")]
         public async Task<ActionResult> CreateGroup(long userId, GroupDto createGroupDto)
         {
-            try
-            {
-                var group = await _service
-                    .CreateGroup(createGroupDto, userId);
+            var group = await _service
+                .CreateGroup(createGroupDto, userId);
 
-                return Ok(GroupToDto(group));
-            }
-            catch (ValidationException ex)
-            {
-                return BadRequest(new { error = "Validation failed", details = ex.Errors });
-            }
-            catch (DbUpdateException ex)
-            {
-                return StatusCode(500, "Error saving in the database: " + ex.Message);
-            }
-            catch (Exception)
-            {
-                return StatusCode(500, "Internal Error");
-            }
+            return Ok(GroupToDto(group));
         }
 
         [HttpGet("{userId}")]
         public async Task<ActionResult> GetGroupsFromUser(long userId)
         {
-            try
 
-            {
-                var groups = await _service
-                    .GetGroupsFromUser(userId);
+            var groups = await _service
+                .GetGroupsFromUser(userId);
 
-                return Ok(groups.Select(g => GroupToDto(g)));
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(ex.Message);
-            }
-            catch (Exception)
-            {
-                return StatusCode(500, "Internal Error");
-            }
+            return Ok(groups.Select(g => GroupToDto(g)));
         }
 
         [HttpGet("{userId}/{groupId}")]
 
         public async Task<ActionResult> GetGroupById(long userId, long groupId)
         {
-            try
-            {
-                var group = await _service
-                    .GetGroupById(userId, groupId);
 
-                return Ok(GroupToDto(group));
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(ex.Message);
-            }
-            catch (Exception)
-            {
-                return StatusCode(500, "Internal Error");
-            }
+            var group = await _service
+                .GetGroupById(userId, groupId);
+
+            return Ok(GroupToDto(group));
         }
 
         [HttpPatch("{userId}/{groupId}")]
         public async Task<ActionResult> UpdateGroup(GroupDto groupDto, long userId, long groupId)
         {
 
-            try
-            {
-                var group = await _service
-                     .UpdateGroup(groupDto, userId, groupId);
+            var group = await _service
+                 .UpdateGroup(groupDto, userId, groupId);
 
-                return Ok(GroupToDto(group));
-            }
-            catch (ValidationException ex)
-            {
-                return BadRequest(new { error = "Validation failed", details = ex.Errors });
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(ex.Message);
-            }
-            catch (DbUpdateException ex)
-            {
-                return StatusCode(500, "Error saving in the database: " + ex.Message);
-            }
-            catch (Exception)
-            {
-                return StatusCode(500, "Internal Error");
-            }
+            return Ok(GroupToDto(group));
         }
 
         [HttpDelete("{userId}/{groupId}")]

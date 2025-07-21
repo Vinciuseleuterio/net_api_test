@@ -6,6 +6,7 @@ using NotesApp.Infrastructure.Data;
 using NotesApp.Infrastructure.Repositories;
 using FluentValidation;
 using NotesApp.Application.Validators;
+using NotesApp.API.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -47,6 +48,8 @@ builder.Services.AddValidatorsFromAssemblyContaining<GroupDtoValidator>();
 // Don`t forget to scope other classes in the program.cs
 
 var app = builder.Build();
+
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 if (app.Environment.IsDevelopment())
 {

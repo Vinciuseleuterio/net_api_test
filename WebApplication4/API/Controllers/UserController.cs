@@ -1,8 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using NotesApp.Application.DTOs;
 using NotesApp.Application.Services;
-using FluentValidation;
 using NotesApp.Domain.Entities;
 
 namespace NotesApp.API.Controllers
@@ -22,94 +20,37 @@ namespace NotesApp.API.Controllers
         [HttpPost]
         public async Task<ActionResult> CreateUser(CreateUserDto createUserDto)
         {
-            try
-            {
-                var user = await _service
-                    .CreateUser(createUserDto);
+            var user = await _service
+                .CreateUser(createUserDto);
 
-                return Created("User: " + user.Id + " was created with success", UserToDto(user));
-            }
-            catch (ValidationException ex)
-            {
-                return BadRequest(new { error = "Validation failed", details = ex.Errors });
-            }
-            catch (DbUpdateException ex)
-            {
-                return StatusCode(500, "Error saving in the database: " + ex.Message);
-            }
-            catch (Exception)
-            {
-                return StatusCode(500, "Internal Error");
-            }
+            return Created("User: " + user.Id + " was created with success", UserToDto(user));
         }
 
         [HttpGet("{userId}")]
         public async Task<ActionResult> GetUserById(long userId)
         {
-            try
-            {
-                var user = await _service
-                    .GetUserById(userId);
+            var user = await _service
+                .GetUserById(userId);
 
-                return Ok(UserToDto(user));
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(ex.Message);
-            }
-            catch (Exception)
-            {
-                return StatusCode(500, "Internal Error");
-            }
+            return Ok(UserToDto(user));
         }
 
         [HttpPatch("{userId}")]
         public async Task<ActionResult> UpdateUser(EditUserDto editUserDto, long userId)
         {
+            var user = await _service
+                .UpdateUser(editUserDto, userId);
 
-            try
-            {
-                var user = await _service
-                    .UpdateUser(editUserDto, userId);
-
-                return Ok(UserToDto(user));
-            }
-            catch (ValidationException ex)
-            {
-                return BadRequest(new { error = "Validation failed", details = ex.Errors });
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(ex.Message);
-            }
-            catch (DbUpdateException ex)
-            {
-                return StatusCode(500, "Error saving in the database: " + ex.Message);
-            }
-            catch (Exception)
-            {
-                return StatusCode(500, "Internal Error");
-            }
+            return Ok(UserToDto(user));
         }
 
         [HttpDelete("{userId}")]
         public async Task<ActionResult> DeleteUser(long userId)
         {
-            try
-            {
-                await _service
-                    .DeleteUserAsync(userId);
+            await _service
+                .DeleteUserAsync(userId);
 
-                return Ok("User Deleted");
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(ex.Message);
-            }
-            catch (Exception)
-            {
-                return StatusCode(500, "Internal Error");
-            }
+            return Ok("User Deleted");
         }
 
         private static EditUserDto UserToDto(User user) =>

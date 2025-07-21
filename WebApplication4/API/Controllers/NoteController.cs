@@ -1,6 +1,4 @@
-﻿using FluentValidation;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Mvc;
 using NotesApp.Application.DTOs;
 using NotesApp.Application.Services;
 using NotesApp.Domain.Entities;
@@ -22,167 +20,66 @@ namespace NotesApp.API.Controllers
         [HttpPost("{userId}")]
         public async Task<ActionResult> CreatePersonalNote(NoteDto noteDto, long userId)
         {
-            try
-            {
-                var note = await _service
-                    .CreatePersonalNote(noteDto, userId);
+            var note = await _service
+                .CreatePersonalNote(noteDto, userId);
 
-                return Created("", NoteToDto(note));
-            }
-            catch (ValidationException ex)
-            {
-                return BadRequest(new { error = "Validation failed", details = ex.Errors });
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(ex.Message);
-            }
-            catch (DbUpdateException ex)
-            {
-                return StatusCode(500, "Error saving in the database: " + ex.Message);
-            }
-            catch (Exception)
-            {
-                return StatusCode(500, "Internal Error");
-            }
+            return Created("", NoteToDto(note));
         }
 
         [HttpPost("{userId}/{groupId}")]
         public async Task<ActionResult> CreateGroupNote(NoteDto noteDto, long userId, long groupId)
         {
-            try
-            {
-                var note = await _service
-                    .CreateGroupNote(noteDto, userId, groupId);
+            var note = await _service
+                .CreateGroupNote(noteDto, userId, groupId);
 
-                return Created("", NoteToDto(note));
-            }
-            catch (ValidationException ex)
-            {
-                return BadRequest(new { error = "Validation failed", details = ex.Errors });
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(ex.Message);
-            }
-            catch (DbUpdateException ex)
-            {
-                return StatusCode(500, "Error saving in the database: " + ex.Message);
-            }
-            catch (Exception)
-            {
-                return StatusCode(500, "Internal Error");
-            }
+            return Created("", NoteToDto(note));
         }
 
         [HttpGet("user/{userId}/{noteId}")]
         public async Task<ActionResult<IEnumerable<NoteDto>>> GetNoteById(long userId, long noteId)
         {
-            try
-            {
-                var note = await _service
-                    .GetNoteById(userId, noteId);
+            var note = await _service
+                .GetNoteById(userId, noteId);
 
-                return Ok(note);
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(ex.Message);
-            }
-            catch (Exception)
-            {
-                return StatusCode(500, "Internal Error");
-            }
+            return Ok(note);
         }
 
         [HttpGet("{userId}")]
         public async Task<ActionResult<IEnumerable<NoteDto>>> GetAllNotesFromUser(long userId)
         {
-            try
-            {
-                var notes = await _service
-                    .GetAllNotesFromUser(userId);
+            var notes = await _service
+                .GetAllNotesFromUser(userId);
 
-                return Ok(notes
-                    .Select(notes => NoteToDto(notes)));
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(ex.Message);
-            }
-            catch (Exception)
-            {
-                return StatusCode(500, "Internal Error");
-            }
+            return Ok(notes
+                .Select(notes => NoteToDto(notes)));
         }
 
         [HttpGet("{userId}/{groupId}")]
         public async Task<ActionResult<IEnumerable<NoteDto>>> GetAllNotesFromGroup(long userId, long groupId)
         {
-            try
-            {
-                var notes = await _service
-                    .GetAllNotesFromGroup(userId, groupId);
+            var notes = await _service
+                .GetAllNotesFromGroup(userId, groupId);
 
-                return Ok(notes
-                    .Select(notes => NoteToDto(notes)));
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(ex.Message);
-            }
-            catch (Exception)
-            {
-                return StatusCode(500, "Internal Error");
-            }
+            return Ok(notes
+                .Select(notes => NoteToDto(notes)));
         }
 
         [HttpPatch("{userId}/{noteId}")]
         public async Task<ActionResult<NoteDto>> UpdateNote(NoteDto noteDto, long userId, long noteId)
         {
-            try
-            {
-                var note = await _service
-                    .UpdateNote(noteDto, userId, noteId);
+            var note = await _service
+                .UpdateNote(noteDto, userId, noteId);
 
-                return Ok(NoteToDto(note));
-            }
-            catch (ValidationException ex)
-            {
-                return BadRequest(new { error = "Validation failed", details = ex.Errors });
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(ex.Message);
-            }
-            catch (DbUpdateException ex)
-            {
-                return StatusCode(500, "Error saving in the database: " + ex.Message);
-            }
-            catch (Exception)
-            {
-                return StatusCode(500, "Internal Error");
-            }
+            return Ok(NoteToDto(note));
         }
 
         [HttpDelete("{userId}/{noteId}")]
         public async Task<ActionResult> DeleteNote(long userId, long noteId)
         {
-            try
-            {
-                await _service
-                    .DeleteNote(userId, noteId);
+            await _service
+                .DeleteNote(userId, noteId);
 
-                return Ok("Note was deleted");
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(ex.Message);
-            }
-            catch (Exception)
-            {
-                return StatusCode(500, "Internal Error");
-            }
+            return Ok("Note was deleted");
         }
 
         private static NoteDto NoteToDto(Note note) =>
