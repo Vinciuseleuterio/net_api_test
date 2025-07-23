@@ -6,7 +6,10 @@ using NotesApp.Infrastructure.Data;
 using NotesApp.Infrastructure.Repositories;
 using FluentValidation;
 using NotesApp.Application.Validators;
-using NotesApp.API.Middlewares;
+using Presentation.Middlewares;
+using Presentation.Requests.Users;
+using Presentation.Requests.Notes;
+using Presentation.Requests.Groups;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -49,6 +52,10 @@ builder.Services.AddValidatorsFromAssemblyContaining<GroupDtoValidator>();
 
 var app = builder.Build();
 
+app.MapUserEndpoints();
+app.MapNoteEndpoints();
+app.MapGroupEndpoints();
+
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 if (app.Environment.IsDevelopment())
@@ -64,6 +71,6 @@ app.UseHttpsRedirection();
 
 app.UseAuthorization();
 
-app.MapControllers();
+//app.MapControllers();
 
 app.Run();

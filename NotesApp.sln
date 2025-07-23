@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.14.36121.58
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NotesApp", "WebApplication4\NotesApp.csproj", "{F44CF69D-E375-496B-866E-0B5A9B0A2E06}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Presentation", "WebApplication4\Presentation.csproj", "{F44CF69D-E375-496B-866E-0B5A9B0A2E06}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Application", "Application\Application.csproj", "{16446382-E32F-4F2F-8655-2A16CA1CCE38}"
 EndProject

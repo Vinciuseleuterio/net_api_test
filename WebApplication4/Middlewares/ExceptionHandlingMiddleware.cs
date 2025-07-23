@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Net;
 
-namespace NotesApp.API.Middlewares
+namespace Presentation.Middlewares
 {
     public class ExceptionHandlingMiddleware
     {
