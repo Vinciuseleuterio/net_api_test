@@ -81,11 +81,16 @@ namespace NotesApp.Infrastructure.Repositories
             await ExistingUser(userId);
 
             var group = await _context.Group
-                .FindAsync(groupId);
+                .Include(g => g.Notes)
+                .Include(g => g.GroupMemberships)
+                .FirstAsync(g => g.Id == groupId);
 
             if (group == null) throw new ArgumentException("Group not found");
 
             group.SetIsDeleted();
+            group.SetUpdatedAt();
+
+            _context.CascadeSoftDelete(group);
 
             await _context.SaveChangesAsync();
         }

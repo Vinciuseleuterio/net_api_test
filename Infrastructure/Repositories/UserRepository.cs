@@ -56,6 +56,8 @@ namespace NotesApp.Infrastructure.Repositories
             user.SetIsDeleted();
             user.SetUpdatedAt();
 
+            _context.CascadeSoftDelete(user);
+
             await _context
                 .SaveChangesAsync();
         }
@@ -65,7 +67,8 @@ namespace NotesApp.Infrastructure.Repositories
             if (userId <= 0) throw new ArgumentException("Invalid user ID", nameof(userId));
 
             var user = await _context.User
-                .FindAsync(userId);
+                .Include(u => u.Notes)
+                .FirstAsync(u => u.Id == userId);
 
             if (user == null)
             {

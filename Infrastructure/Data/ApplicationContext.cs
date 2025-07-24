@@ -22,24 +22,19 @@ namespace NotesApp.Infrastructure.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder
-                .Entity<User>()
+            modelBuilder.Entity<User>()
                 .HasQueryFilter(u => !u.IsDeleted);
 
-            modelBuilder
-                .Entity<Group>()
+            modelBuilder.Entity<Group>()
                 .HasQueryFilter(p => !p.IsDeleted);
 
-            modelBuilder
-                .Entity<Note>()
+            modelBuilder.Entity<Note>()
                 .HasQueryFilter(n => !n.IsDeleted);
 
-            modelBuilder
-                .Entity<GroupMembership>()
+            modelBuilder.Entity<GroupMembership>()
                 .HasQueryFilter(gm => !gm.IsDeleted);
-            modelBuilder
 
-                .Entity<User>()
+            modelBuilder.Entity<User>()
                 .HasIndex(u => u.Email)
                 .IsUnique();
 
@@ -48,41 +43,30 @@ namespace NotesApp.Infrastructure.Data
             base.OnModelCreating(modelBuilder);
         }
 
-        public override int SaveChanges()
-        {
-            HandleSoftDelete();
-            return base.SaveChanges();
-        }
-
-        public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
-        {
-            HandleSoftDelete();
-            return await base.SaveChangesAsync(cancellationToken);
-        }
-
-        private void HandleSoftDelete()
+        public void HandleSoftDelete()
         {
             var softDeletables = ChangeTracker.Entries()
-                .Where(e => e.State == EntityState.Deleted && e.Entity is ISoftDelete)
+                .Where(e => e.Entity is ISoftDelete)
                 .ToList();
 
             foreach (var entry in softDeletables)
             {
-                entry.State = EntityState.Modified;
-                ((ISoftDelete)entry.Entity).IsDeleted = true;
-
                 CascadeSoftDelete(entry.Entity);
             }
         }
 
-        private void CascadeSoftDelete(object entity)
+        public void CascadeSoftDelete(object entity)
         {
             if (entity is User userN)
             {
-                foreach (var noteUser in userN.Notes)
+                foreach (var note in userN.Notes)
                 {
-                    if (!noteUser.IsDeleted)
-                        noteUser.IsDeleted = true;
+                    if (!note.IsDeleted) 
+                    {
+                        note.IsDeleted = true;
+                        note.SetUpdatedAt();
+                    }
+                        
                 }
             }
 
@@ -90,8 +74,12 @@ namespace NotesApp.Infrastructure.Data
             {
                 foreach (var noteGroup in groupN.Notes)
                 {
-                    if (!noteGroup.IsDeleted)
+                    if (!noteGroup.IsDeleted) 
+                    {
                         noteGroup.IsDeleted = true;
+                        noteGroup.SetUpdatedAt();
+                    }
+                        
                 }
             }
 
@@ -99,8 +87,11 @@ namespace NotesApp.Infrastructure.Data
             {
                 foreach (var groupMembershipGroup in groupM.GroupMemberships)
                 {
-                    if (!groupMembershipGroup.IsDeleted)
+                    if (!groupMembershipGroup.IsDeleted) 
+                    {
                         groupMembershipGroup.IsDeleted = true;
+                    }
+                        
                 }
             }
         }

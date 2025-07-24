@@ -9,6 +9,7 @@ namespace NotesApp.Domain.Entities
         public required long GroupId { get; init; }
         public Group Group { get; private set; } = null!;
         public DateTime CreatedAt { get; private set; }
+        public DateTime UpdatedAt { get; private set; }
         public bool IsDeleted { get; set; }
 
         public void SetCreatedAt()
@@ -20,5 +21,6 @@ namespace NotesApp.Domain.Entities
             IsDeleted = true;
 
         }
+
     }
 }

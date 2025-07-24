@@ -18,6 +18,8 @@ namespace NotesApp.Infrastructure.Data.Configurations
             builder.Property(gm => gm.IsDeleted)
                 .IsRequired()
                 .HasColumnName("is_deleted");
+            builder.Property(gm => gm.UpdatedAt)
+                .HasColumnName("updated_at");
             builder.Property(gm => gm.UserId)
                 .HasColumnName("user_id");
             builder.Property(gm => gm.GroupId)
