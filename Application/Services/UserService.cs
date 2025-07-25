@@ -5,7 +5,7 @@ using NotesApp.Domain.Interfaces;
 
 namespace NotesApp.Application.Services
 {
-    public class UserService
+    public class UserService : IUserService
     {
         private readonly IUserRepository _repo;
         private readonly IValidator<CreateUserDto> _createValidator;

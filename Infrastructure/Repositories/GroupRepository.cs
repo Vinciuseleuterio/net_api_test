@@ -90,7 +90,8 @@ namespace NotesApp.Infrastructure.Repositories
             group.SetIsDeleted();
             group.SetUpdatedAt();
 
-            _context.CascadeSoftDelete(group);
+            ApplicationContext
+                .CascadeSoftDelete(group);
 
             await _context.SaveChangesAsync();
         }

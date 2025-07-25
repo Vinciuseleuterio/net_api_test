@@ -56,7 +56,8 @@ namespace NotesApp.Infrastructure.Repositories
             user.SetIsDeleted();
             user.SetUpdatedAt();
 
-            _context.CascadeSoftDelete(user);
+            ApplicationContext.
+                CascadeSoftDelete(user);
 
             await _context
                 .SaveChangesAsync();

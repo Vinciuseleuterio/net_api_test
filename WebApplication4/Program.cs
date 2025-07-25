@@ -32,29 +32,29 @@ DotNetEnv.Env.Load();
 builder.Services.AddDbContext<ApplicationContext>(o =>
     o.UseNpgsql(Environment.GetEnvironmentVariable("CONNECTION_STRING_DB")));
 
-// Register Services and Repositories
-builder.Services.AddScoped<UserService>();
-builder.Services.AddScoped<IUserRepository, UserRepository>();
+// Register Services and Repositories and Validators
 
-builder.Services.AddScoped<NoteService>();
-builder.Services.AddScoped<INoteRepository, NoteRepository>();
-
-builder.Services.AddScoped<GroupService>();
-builder.Services.AddScoped<IGroupRepository, GroupRepository>();
-
-// Register FluentValidation validators
-builder.Services.AddValidatorsFromAssemblyContaining<CreateUserDtoValidator>();
-builder.Services.AddValidatorsFromAssemblyContaining<EditUserDtoValidator>();
-builder.Services.AddValidatorsFromAssemblyContaining<NoteDtoValidator>();
-builder.Services.AddValidatorsFromAssemblyContaining<GroupDtoValidator>();
+builder.Services
+    .AddScoped<UserService>()
+    .AddScoped<IUserRepository, UserRepository>()
+    .AddScoped<NoteService>()
+    .AddScoped<INoteRepository, NoteRepository>()
+    .AddScoped<GroupService>()
+    .AddScoped<IGroupRepository, GroupRepository>()
+    .AddValidatorsFromAssemblyContaining<CreateUserDtoValidator>()
+    .AddValidatorsFromAssemblyContaining<EditUserDtoValidator>()
+    .AddValidatorsFromAssemblyContaining<NoteDtoValidator>()
+    .AddValidatorsFromAssemblyContaining<GroupDtoValidator>();
 
 // Don`t forget to scope other classes in the program.cs
 
 var app = builder.Build();
 
-app.MapUserEndpoints();
-app.MapNoteEndpoints();
-app.MapGroupEndpoints();
+app.MapUserEndpoints()
+    .MapNoteEndpoints()
+    .MapGroupEndpoints();
+
+//UserEndpoints.MapUserEndpoints(app);
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
@@ -70,7 +70,5 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
-
-//app.MapControllers();
 
 app.Run();

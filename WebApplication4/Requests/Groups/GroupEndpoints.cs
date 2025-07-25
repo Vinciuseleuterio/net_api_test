@@ -6,7 +6,7 @@ namespace Presentation.Requests.Groups
 {
     public static class GroupEndpoints
     {
-        public static void MapGroupEndpoints(this IEndpointRouteBuilder app)
+        public static IEndpointRouteBuilder MapGroupEndpoints(this IEndpointRouteBuilder app)
         {
             var group = app.MapGroup("/api")
                 .WithTags("Group");
@@ -34,6 +34,8 @@ namespace Presentation.Requests.Groups
                 await groupService.DeleteGroup(userId, groupId);
                 return Results.Ok();
             });
+
+            return app;
         }
 
         private static GroupDto GroupToDto(Group group) =>

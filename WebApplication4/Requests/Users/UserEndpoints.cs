@@ -6,7 +6,7 @@ namespace Presentation.Requests.Users
 {
     public static class UserEndpoints
     {
-        public static void MapUserEndpoints(this IEndpointRouteBuilder app)
+        public static IEndpointRouteBuilder MapUserEndpoints(this IEndpointRouteBuilder app)
         {
             var user = app.MapGroup("/api")
                 .WithTags("User");
@@ -34,6 +34,8 @@ namespace Presentation.Requests.Users
                 await userService.DeleteUserAsync(userId);
                 return Results.Ok("User Deleted");
             });
+
+            return app;
         }
 
         private static EditUserDto UserToDto(User user) =>

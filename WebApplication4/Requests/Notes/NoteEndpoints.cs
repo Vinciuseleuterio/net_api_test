@@ -6,7 +6,7 @@ namespace Presentation.Requests.Notes
 {
     public static class NoteEndpoints
     {
-        public static void MapNoteEndpoints(this IEndpointRouteBuilder app)
+        public static IEndpointRouteBuilder MapNoteEndpoints(this IEndpointRouteBuilder app)
         {
             var note = app.MapGroup("/api")
                 .WithTags("Note");
@@ -52,6 +52,8 @@ namespace Presentation.Requests.Notes
                 await noteService.DeleteNote(userId, noteId);
                 return Results.Ok("Note was deleted");
             });
+
+            return app;
         }
 
         private static NoteDto NoteToDto(Note note) =>

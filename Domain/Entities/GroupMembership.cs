@@ -16,11 +16,10 @@ namespace NotesApp.Domain.Entities
         {
             CreatedAt = DateTime.UtcNow;
         }
-        public void SetDeletedAt()
+        public void SetIsDeleted()
         {
             IsDeleted = true;
 
         }
-
     }
 }

@@ -43,55 +43,55 @@ namespace NotesApp.Infrastructure.Data
             base.OnModelCreating(modelBuilder);
         }
 
-        public void HandleSoftDelete()
+        public static void CascadeSoftDelete(object entity)
         {
-            var softDeletables = ChangeTracker.Entries()
-                .Where(e => e.Entity is ISoftDelete)
-                .ToList();
-
-            foreach (var entry in softDeletables)
+            if (entity is User user)
             {
-                CascadeSoftDelete(entry.Entity);
-            }
-        }
-
-        public void CascadeSoftDelete(object entity)
-        {
-            if (entity is User userN)
-            {
-                foreach (var note in userN.Notes)
+                foreach (var note in user.Notes)
                 {
-                    if (!note.IsDeleted) 
+                    if (!note.IsDeleted)
                     {
-                        note.IsDeleted = true;
+                        note.SetIsDeleted();
                         note.SetUpdatedAt();
                     }
-                        
+
                 }
             }
 
-            if (entity is Group groupN)
+            if (entity is User userG)
             {
-                foreach (var noteGroup in groupN.Notes)
+                foreach (var groupU in userG.Groups)
                 {
-                    if (!noteGroup.IsDeleted) 
+                    if (!groupU.IsDeleted)
                     {
-                        noteGroup.IsDeleted = true;
-                        noteGroup.SetUpdatedAt();
+                        groupU.SetIsDeleted();
+                        groupU.SetUpdatedAt();
                     }
-                        
+                }
+            }
+
+            if (entity is Group group)
+            {
+                foreach (var note in group.Notes)
+                {
+                    if (!note.IsDeleted)
+                    {
+                        note.SetIsDeleted();
+                        note.SetUpdatedAt();
+                    }
+
                 }
             }
 
             if (entity is Group groupM)
             {
-                foreach (var groupMembershipGroup in groupM.GroupMemberships)
+                foreach (var groupMembership in groupM.GroupMemberships)
                 {
-                    if (!groupMembershipGroup.IsDeleted) 
+                    if (!groupMembership.IsDeleted)
                     {
-                        groupMembershipGroup.IsDeleted = true;
+                        groupMembership.SetIsDeleted();
                     }
-                        
+
                 }
             }
         }
