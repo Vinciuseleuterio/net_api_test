@@ -1,4 +1,5 @@
-﻿using FluentValidation;
+﻿using Application.Interfaces;
+using FluentValidation;
 using NotesApp.Application.DTOs;
 using NotesApp.Domain.Entities;
 using NotesApp.Domain.Interfaces;

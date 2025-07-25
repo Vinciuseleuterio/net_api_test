@@ -10,13 +10,14 @@ using Presentation.Middlewares;
 using Presentation.Requests.Users;
 using Presentation.Requests.Notes;
 using Presentation.Requests.Groups;
+using Application.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(c =>
+builder.Services.AddEndpointsApiExplorer()
+    .AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo
     {
@@ -32,31 +33,26 @@ DotNetEnv.Env.Load();
 builder.Services.AddDbContext<ApplicationContext>(o =>
     o.UseNpgsql(Environment.GetEnvironmentVariable("CONNECTION_STRING_DB")));
 
-// Register Services and Repositories and Validators
+// Register Services, Interfaces, Repositories and Validators
 
 builder.Services
-    .AddScoped<UserService>()
+    .AddScoped<IUserService, UserService>()
     .AddScoped<IUserRepository, UserRepository>()
-    .AddScoped<NoteService>()
+    .AddScoped<INoteService, NoteService>()
     .AddScoped<INoteRepository, NoteRepository>()
-    .AddScoped<GroupService>()
+    .AddScoped<IGroupService, GroupService>()
     .AddScoped<IGroupRepository, GroupRepository>()
-    .AddValidatorsFromAssemblyContaining<CreateUserDtoValidator>()
-    .AddValidatorsFromAssemblyContaining<EditUserDtoValidator>()
-    .AddValidatorsFromAssemblyContaining<NoteDtoValidator>()
-    .AddValidatorsFromAssemblyContaining<GroupDtoValidator>();
-
-// Don`t forget to scope other classes in the program.cs
+    .AddValidatorsFromAssemblyContaining<CreateUserDtoValidator>();
 
 var app = builder.Build();
+
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 app.MapUserEndpoints()
     .MapNoteEndpoints()
     .MapGroupEndpoints();
 
-//UserEndpoints.MapUserEndpoints(app);
-
-app.UseMiddleware<ExceptionHandlingMiddleware>();
+// Register the Middlewere
 
 if (app.Environment.IsDevelopment())
 {

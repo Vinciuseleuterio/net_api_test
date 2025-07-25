@@ -1,11 +1,12 @@
-﻿using FluentValidation;
+﻿using Application.Interfaces;
+using FluentValidation;
 using NotesApp.Application.DTOs;
 using NotesApp.Domain.Entities;
 using NotesApp.Domain.Interfaces;
 
 namespace NotesApp.Application.Services
 {
-    public class NoteService
+    public class NoteService : INoteService
     {
         private readonly INoteRepository _repo;
         private readonly IValidator<NoteDto> _noteDtoValidator;

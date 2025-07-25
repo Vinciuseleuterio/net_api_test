@@ -1,11 +1,12 @@
-﻿using FluentValidation;
+﻿using Application.Interfaces;
+using FluentValidation;
 using NotesApp.Application.DTOs;
 using NotesApp.Domain.Entities;
 using NotesApp.Domain.Interfaces;
 
 namespace NotesApp.Application.Services
 {
-    public class GroupService
+    public class GroupService : IGroupService
     {
         private readonly IGroupRepository _repo;
         private readonly IValidator<GroupDto> _groupValidator;
