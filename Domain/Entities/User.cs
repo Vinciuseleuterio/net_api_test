@@ -4,9 +4,9 @@ namespace NotesApp.Domain.Entities
 {
     public class User : StandardModel, ISoftDelete
     {
-        public string Name { get; }
-        public string Email { get; }
-        public string AboutMe { get; } = String.Empty;
+        public string Name { get; private set; }
+        public string Email { get; private set; }
+        public string AboutMe { get; private set; } = String.Empty;
         public List<Note> Notes { get; } = [];
         public List<Group> Groups { get; } = [];
         public List<GroupMembership> GroupMemberships { get; } = [];
@@ -51,6 +51,14 @@ namespace NotesApp.Domain.Entities
                     throw new InvalidOperationException("Email must be set before Build()");
 
                 return new User(_name, _email, _aboutMe);
+            }
+
+            public User Update(User user)
+            {
+                user.Name = _name;
+                user.AboutMe = _aboutMe;
+
+                return user;
             }
         }
     }

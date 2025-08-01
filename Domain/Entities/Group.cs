@@ -5,9 +5,9 @@ namespace NotesApp.Domain.Entities
 {
     public class Group : StandardModel, ISoftDelete
     {
-        public string Name { get; }
-        public string Description { get; } = String.Empty;
-        public long CreatorId { get; }
+        public string Name { get; private set; }
+        public string Description { get; private set; } = String.Empty;
+        public long CreatorId { get; private set; }
         public User Creator { get; } = null!;
         public List<Note> Notes { get; } = [];
         public List<GroupMembership> GroupMemberships { get; } = [];
@@ -52,6 +52,14 @@ namespace NotesApp.Domain.Entities
                     throw new InvalidOperationException("Email must be set before Build()");
 
                 return new Group(_name, _description, _creatorId);
+            }
+
+            public Group Update(Group group)
+            {
+                group.Name = _name;
+                group.Description = _description;
+
+                return group;
             }
         }
     }

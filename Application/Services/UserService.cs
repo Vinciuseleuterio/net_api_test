@@ -35,15 +35,9 @@ namespace NotesApp.Application.Services
             var user = _userBuilder
                 .SetName(userDto.Name)
                 .SetEmail(userDto.Email)
+                .SetAboutMe(userDto.AboutMe)
                 .Build();
 
-
-            if (!string.IsNullOrEmpty(userDto.AboutMe))
-            {
-                user = _userBuilder
-                    .SetAboutMe(userDto.AboutMe)
-                    .Build();
-            }
 
             user.SetCreatedAt();
 
@@ -67,12 +61,12 @@ namespace NotesApp.Application.Services
             var user = await _repo
                 .ExistingUser(userId);
 
-            user = _userBuilder
+            var updatedUser = _userBuilder
                 .SetName(userDto.Name)
                 .SetAboutMe(userDto.AboutMe)
-                .Build();
+                .Update(user);
 
-            user.SetCreatedAt();
+            updatedUser.SetUpdatedAt();
 
             return await _repo
                 .UpdateUser(user, userId);

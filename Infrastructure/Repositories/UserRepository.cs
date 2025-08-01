@@ -37,13 +37,13 @@ namespace NotesApp.Infrastructure.Repositories
 
         public async Task<User> UpdateUser(User user, long userId)
         {
-            var existingUser = ExistingUser(userId);
-
+            await ExistingUser(userId);
 
             if (_context.User.Update(user) == null) throw new DbUpdateException("Error updating user in the database");
 
             await _context
                 .SaveChangesAsync();
+
             return user;
         }
 

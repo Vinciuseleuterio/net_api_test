@@ -90,12 +90,12 @@ namespace NotesApp.Application.Services
             var note = await _repo
                 .ExistingNote(noteId);
 
-            note = _noteBuilder
+            var updatedNote = _noteBuilder
                 .SetTitle(noteDto.Title)
                 .SetContent(noteDto.Content)
-                .Build();
+                .Update(note);
 
-            note.SetUpdatedAt();
+            updatedNote.SetUpdatedAt();
 
             return await _repo
                 .UpdateNote(note, userId, noteId);

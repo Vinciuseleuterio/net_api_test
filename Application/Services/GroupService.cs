@@ -63,13 +63,13 @@ namespace NotesApp.Application.Services
             var group = await _repo
                 .ExistingGroup(groupId);
 
-            group = _groupBuilder
+            var updatedGroup = _groupBuilder
                 .SetName(groupDto.Name)
                 .SetDescription(groupDto.Description)
                 .SetCreatorId(userId)
-                .Build();
+                .Update(group);
 
-            group.SetUpdatedAt();
+            updatedGroup.SetUpdatedAt();
 
             return await _repo
                 .UpdateGroup(group, userId, groupId);

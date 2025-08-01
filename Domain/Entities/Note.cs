@@ -1,10 +1,12 @@
-﻿namespace NotesApp.Domain.Entities
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace NotesApp.Domain.Entities
 {
     public class Note : StandardModel
     {
-        public string Title { get; }
-        public string Content { get; } = String.Empty;
-        public long CreatorId { get; }
+        public string Title { get; private set; }
+        public string Content { get; private set; } = String.Empty;
+        public long CreatorId { get; private set; }
         public User User { get; private set; } = null!;
         public long? GroupId { get; }
         public Group Group { get; private set; } = null!;
@@ -67,6 +69,14 @@
                     throw new InvalidOperationException("CreatorId must be set before build");
 
                 return new Note(_title, _content, _creatorId, _groupId);
+            }
+
+            public Note Update(Note note)
+            {
+                note.Title = _title;
+                note.Content = _content;
+
+                return note;
             }
         }
     }
