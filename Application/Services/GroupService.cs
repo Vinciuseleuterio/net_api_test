@@ -10,12 +10,15 @@ namespace NotesApp.Application.Services
     {
         private readonly IGroupRepository _repo;
         private readonly IValidator<GroupDto> _groupValidator;
+        private readonly Group.GroupBuilder _groupBuilder;
 
         public GroupService(IGroupRepository repo,
-            IValidator<GroupDto> groupValidator)
+            IValidator<GroupDto> groupValidator,
+            Group.GroupBuilder groupBuilder)
         {
             _repo = repo;
             _groupValidator = groupValidator;
+            _groupBuilder = groupBuilder;
         }
 
         public async Task<Group> CreateGroup(GroupDto groupDto, long userId)
@@ -26,12 +29,11 @@ namespace NotesApp.Application.Services
             if (!result.IsValid) throw new ValidationException(result.Errors);
 
 
-            Group group = new Group
-            {
-                Name = groupDto.Name,
-                Description = groupDto.Description,
-                CreatorId = userId
-            };
+            var group = _groupBuilder
+                .SetName(groupDto.Name)
+                .SetDescription(groupDto.Description)
+                .SetCreatorId(userId)
+                .Build();
 
             await _repo
                 .CreateGroup(group, userId);
@@ -61,8 +63,11 @@ namespace NotesApp.Application.Services
             var group = await _repo
                 .ExistingGroup(groupId);
 
-            group.Name = groupDto.Name;
-            group.Description = groupDto.Description;
+            group = _groupBuilder
+                .SetName(groupDto.Name)
+                .SetDescription(groupDto.Description)
+                .SetCreatorId(userId)
+                .Build();
 
             group.SetUpdatedAt();
 

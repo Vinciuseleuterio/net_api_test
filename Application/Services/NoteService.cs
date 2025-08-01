@@ -10,12 +10,15 @@ namespace NotesApp.Application.Services
     {
         private readonly INoteRepository _repo;
         private readonly IValidator<NoteDto> _noteDtoValidator;
+        private readonly Note.NoteBuilder _noteBuilder;
 
         public NoteService(INoteRepository repo,
-            IValidator<NoteDto> noteDtoValidator)
+            IValidator<NoteDto> noteDtoValidator,
+            Note.NoteBuilder noteBuilder)
         {
             _repo = repo;
             _noteDtoValidator = noteDtoValidator;
+            _noteBuilder = noteBuilder;
         }
 
         public async Task<Note> CreatePersonalNote(NoteDto noteDto, long userId)
@@ -28,12 +31,11 @@ namespace NotesApp.Application.Services
                 throw new ValidationException(result.Errors);
             }
 
-            var note = new Note
-            {
-                Title = noteDto.Title,
-                Content = noteDto.Content,
-                CreatorId = userId
-            };
+            var note = _noteBuilder
+                .SetTitle(noteDto.Title)
+                .SetContent(noteDto.Content)
+                .SetCreatorId(userId)
+                .Build();
 
             note.SetCreatedAt();
 
@@ -51,13 +53,12 @@ namespace NotesApp.Application.Services
                 throw new ValidationException(result.Errors);
             }
 
-            Note note = new Note
-            {
-                Title = noteDto.Title,
-                Content = noteDto.Content,
-                CreatorId = userId,
-                GroupId = groupId
-            };
+            var note = _noteBuilder
+                 .SetCreatorId(userId)
+                 .SetGroupId(groupId)
+                 .SetTitle(noteDto.Title)
+                 .SetContent(noteDto.Content)
+                 .Build();
 
             note.SetCreatedAt();
 
@@ -89,14 +90,15 @@ namespace NotesApp.Application.Services
             var note = await _repo
                 .ExistingNote(noteId);
 
-            note.Title = noteDto.Title;
-            note.Content = noteDto.Content;
+            note = _noteBuilder
+                .SetTitle(noteDto.Title)
+                .SetContent(noteDto.Content)
+                .Build();
 
             note.SetUpdatedAt();
 
             return await _repo
                 .UpdateNote(note, userId, noteId);
-
         }
 
         public async Task DeleteNote(long userId, long noteId)

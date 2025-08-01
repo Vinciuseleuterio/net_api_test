@@ -16,6 +16,10 @@ namespace NotesApp.Domain.Entities
         {
             CreatedAt = DateTime.UtcNow;
         }
+        public void SetUpdatedAt()
+        {
+            UpdatedAt = DateTime.UtcNow;
+        }
         public void SetIsDeleted()
         {
             IsDeleted = true;

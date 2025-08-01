@@ -9,18 +9,13 @@ namespace NotesApp.Domain.Entities
         public long Id { get; private set; }
 
         [Column("created_at")]
-        public DateTime? CreatedAt { get; private set; }
+        public DateTime? CreatedAt { get; set; }
 
         [Column("updated_at")]
-        public DateTime? UpdatedAt { get; private set; }
+        public DateTime? UpdatedAt { get; set; }
 
         [Column("is_deleted")]
         public bool IsDeleted { get; set; }
-
-        public void SetIsDeleted()
-        {
-            IsDeleted = true;
-        }
 
         public void SetCreatedAt()
         {
@@ -30,6 +25,11 @@ namespace NotesApp.Domain.Entities
         public void SetUpdatedAt()
         {
             UpdatedAt = DateTime.UtcNow;
+        }
+
+        public void SetIsDeleted()
+        {
+            IsDeleted = true;
         }
     }
 }

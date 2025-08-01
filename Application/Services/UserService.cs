@@ -11,34 +11,38 @@ namespace NotesApp.Application.Services
         private readonly IUserRepository _repo;
         private readonly IValidator<CreateUserDto> _createValidator;
         private readonly IValidator<EditUserDto> _editValidator;
+        private readonly User.UserBuilder _userBuilder;
 
         public UserService(IUserRepository repo,
             IValidator<CreateUserDto> createValidator,
-            IValidator<EditUserDto> ediValidator)
+            IValidator<EditUserDto> ediValidator,
+            User.UserBuilder userBuilder)
         {
             _repo = repo;
             _createValidator = createValidator;
             _editValidator = ediValidator;
+            _userBuilder = userBuilder;
         }
 
-        public async Task<User> CreateUser(CreateUserDto createUserDto)
+        public async Task<User> CreateUser(CreateUserDto userDto)
         {
 
             var result = _createValidator
-                .Validate(createUserDto);
+                .Validate(userDto);
 
             if (!result.IsValid) throw new ValidationException(result.Errors);
 
-            User user = new User
+            var user = _userBuilder
+                .SetName(userDto.Name)
+                .SetEmail(userDto.Email)
+                .Build();
 
-            {
-                Email = createUserDto.Email,
-                Name = createUserDto.Name
-            };
 
-            if (!string.IsNullOrEmpty(createUserDto.AboutMe))
+            if (!string.IsNullOrEmpty(userDto.AboutMe))
             {
-                user.AboutMe = createUserDto.AboutMe;
+                user = _userBuilder
+                    .SetAboutMe(userDto.AboutMe)
+                    .Build();
             }
 
             user.SetCreatedAt();
@@ -53,20 +57,22 @@ namespace NotesApp.Application.Services
                 .GetUserById(userId);
         }
 
-        public async Task<User> UpdateUser(EditUserDto editUserDto, long userId)
+        public async Task<User> UpdateUser(EditUserDto userDto, long userId)
         {
             var result = _editValidator
-                .Validate(editUserDto);
+                .Validate(userDto);
 
             if (!result.IsValid) throw new ValidationException(result.Errors);
 
             var user = await _repo
                 .ExistingUser(userId);
 
-            user.Name = editUserDto.Name;
-            user.AboutMe = editUserDto.AboutMe;
+            user = _userBuilder
+                .SetName(userDto.Name)
+                .SetAboutMe(userDto.AboutMe)
+                .Build();
 
-            user.SetUpdatedAt();
+            user.SetCreatedAt();
 
             return await _repo
                 .UpdateUser(user, userId);
@@ -76,8 +82,11 @@ namespace NotesApp.Application.Services
         {
             if (userId <= 0) throw new ArgumentException("Invalid user ID", nameof(userId));
 
+            var user = await _repo
+                .ExistingUser(userId);
+
             await _repo
-                .DeleteUserAsync(userId);
+                .DeleteUserAsync(user);
         }
     }
 }

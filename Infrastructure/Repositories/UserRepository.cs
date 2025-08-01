@@ -17,20 +17,15 @@ namespace NotesApp.Infrastructure.Repositories
 
         public async Task<User> CreateUser(User user)
         {
-            _context.User
+            var createdUser = _context.User
                 .Add(user);
 
             await _context
                 .SaveChangesAsync();
 
-            var createdUser = await ExistingUser(user.Id);
-
-            if (createdUser == null)
-            {
-                throw new DbUpdateException("Error saving user in the database");
-            }
-
-            return createdUser;
+            if (createdUser == null) throw new DbUpdateException("Error saving user in the database");
+            
+            return createdUser.Entity;
         }
 
         public async Task<User> GetUserById(long userId)
@@ -42,6 +37,9 @@ namespace NotesApp.Infrastructure.Repositories
 
         public async Task<User> UpdateUser(User user, long userId)
         {
+            var existingUser = ExistingUser(userId);
+
+
             if (_context.User.Update(user) == null) throw new DbUpdateException("Error updating user in the database");
 
             await _context
@@ -49,10 +47,8 @@ namespace NotesApp.Infrastructure.Repositories
             return user;
         }
 
-        public async Task DeleteUserAsync(long userId)
+        public async Task DeleteUserAsync(User user)
         {
-            var user = await ExistingUser(userId);
-
             user.SetIsDeleted();
             user.SetUpdatedAt();
 

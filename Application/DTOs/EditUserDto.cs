@@ -3,6 +3,6 @@
     public class EditUserDto
     {
         public required string Name { get; set; }
-        public string? AboutMe { get; set; }
+        public string AboutMe { get; set; } = String.Empty;
     }
 }

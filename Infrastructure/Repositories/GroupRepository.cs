@@ -18,18 +18,20 @@ namespace NotesApp.Infrastructure.Repositories
         {
             await ExistingUser(userId);
 
-            if (_context.Group.Add(group) == null) throw new DbUpdateException("Error saving note in the database");
+            var createdGroup = _context.Group
+                .Add(group);
+
+            if (createdGroup == null) throw new DbUpdateException("Error saving note in the database");
 
             group.SetCreatedAt();
 
-            await _context
-                .SaveChangesAsync();
-
-            GroupMembership groupMembership = new GroupMembership
+            var groupMembership = new GroupMembership
             {
                 UserId = userId,
                 GroupId = group.Id
             };
+
+            group.GroupMemberships.Add(groupMembership);
 
             if (_context.GroupMembership.Add(groupMembership) == null) throw new DbUpdateException("Error saving Group Memberhsip on database");
 
@@ -38,7 +40,7 @@ namespace NotesApp.Infrastructure.Repositories
             await _context
                 .SaveChangesAsync();
 
-            return group;
+            return createdGroup.Entity;
         }
 
         public async Task<Group> GetGroupById(long userId, long groupId)

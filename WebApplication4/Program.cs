@@ -11,6 +11,7 @@ using Presentation.Requests.Users;
 using Presentation.Requests.Notes;
 using Presentation.Requests.Groups;
 using Application.Interfaces;
+using NotesApp.Domain.Entities;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -37,10 +38,13 @@ builder.Services.AddDbContext<ApplicationContext>(o =>
 
 builder.Services
     .AddScoped<IUserService, UserService>()
+    .AddScoped<User.UserBuilder>()
     .AddScoped<IUserRepository, UserRepository>()
     .AddScoped<INoteService, NoteService>()
+    .AddScoped<Note.NoteBuilder>()
     .AddScoped<INoteRepository, NoteRepository>()
     .AddScoped<IGroupService, GroupService>()
+    .AddScoped<Group.GroupBuilder>()
     .AddScoped<IGroupRepository, GroupRepository>()
     .AddValidatorsFromAssemblyContaining<CreateUserDtoValidator>();
 

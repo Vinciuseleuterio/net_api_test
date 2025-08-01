@@ -18,12 +18,15 @@ namespace NotesApp.Infrastructure.Repositories
         {
             if (await ExistingUser(userId) == null) throw new ArgumentException("User not found");
 
-            if (_context.Note.Add(note) == null) throw new DbUpdateException("Error saving note in the database");
+            var createdNote = _context.Note
+                .Add(note);
+
+            if (createdNote == null) throw new DbUpdateException("Error saving note in the database");
 
             await _context
                 .SaveChangesAsync();
 
-            return note;
+            return createdNote.Entity;
         }
 
         public async Task<Note> CreateGroupNote(Note note, long userId, long groupId)
@@ -34,12 +37,15 @@ namespace NotesApp.Infrastructure.Repositories
 
             if (groupMembership == null) throw new ArgumentException("Group Membership not found");
 
-            if (_context.Note.Add(note) == null) throw new DbUpdateException("Error saving note in the database");
+            var createdNote = _context.Note
+                .Add(note);
+
+            if (createdNote == null) throw new DbUpdateException("Error saving note in the database");
 
             await _context
                 .SaveChangesAsync();
 
-            return note;
+            return createdNote.Entity;
         }
 
         public async Task<Note> GetNoteById(long userId, long noteId)
@@ -90,12 +96,16 @@ namespace NotesApp.Infrastructure.Repositories
         {
             if (note.CreatorId != userId) throw new ArgumentException("Note doesn't belong to user");
 
-            if (_context.Note.Update(note) == null) throw new DbUpdateException("Error saving in the database");
+            var createtNote = _context
+                .Note
+                .Update(note);
+
+            if (createtNote == null) throw new DbUpdateException("Error saving in the database");
 
             await _context
                 .SaveChangesAsync();
 
-            return note;
+            return createtNote.Entity;
         }
 
         public async Task DeleteNote(long userId, long noteId)

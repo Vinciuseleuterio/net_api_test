@@ -90,6 +90,7 @@ namespace NotesApp.Infrastructure.Data
                     if (!groupMembership.IsDeleted)
                     {
                         groupMembership.SetIsDeleted();
+                        groupMembership.SetUpdatedAt();
                     }
 
                 }
