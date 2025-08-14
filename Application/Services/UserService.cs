@@ -32,6 +32,8 @@ namespace NotesApp.Application.Services
 
             if (!result.IsValid) throw new ValidationException(result.Errors);
 
+            // Cria um novo objeto de usuário
+
             var user = _userBuilder
                 .SetName(userDto.Name)
                 .SetEmail(userDto.Email)

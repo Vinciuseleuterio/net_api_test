@@ -11,4 +11,4 @@ namespace Application.Interfaces
         Task<IEnumerable<Group>> GetGroupsFromUser(long userId);
         Task<Group> UpdateGroup(GroupDto groupDto, long userId, long groupId);
     }
-}
+} 

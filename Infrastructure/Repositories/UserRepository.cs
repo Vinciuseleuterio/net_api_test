@@ -24,7 +24,7 @@ namespace NotesApp.Infrastructure.Repositories
                 .SaveChangesAsync();
 
             if (createdUser == null) throw new DbUpdateException("Error saving user in the database");
-            
+
             return createdUser.Entity;
         }
 
