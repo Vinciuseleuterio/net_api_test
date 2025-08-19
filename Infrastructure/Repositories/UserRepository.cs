@@ -20,10 +20,15 @@ namespace NotesApp.Infrastructure.Repositories
             var createdUser = _context.User
                 .Add(user);
 
-            await _context
-                .SaveChangesAsync();
-
-            if (createdUser == null) throw new DbUpdateException("Error saving user in the database");
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException ex)
+            {
+                // Here you can log, wrap, or rethrow the exception
+                throw new DbUpdateException("Error saving user in the database", ex);
+            }
 
             return createdUser.Entity;
         }

@@ -30,7 +30,7 @@ namespace NotesApp.Domain.Entities
                 _name = name;
                 return this;
             }
-
+ 
             public GroupBuilder SetDescription(string description)
             {
                 _description = description;

@@ -40,8 +40,7 @@ namespace NotesApp.Application.Services
                 .SetAboutMe(userDto.AboutMe)
                 .Build();
 
-
-            user.SetCreatedAt();
+            //user.SetCreatedAt();
 
             return await _repo
                 .CreateUser(user);
@@ -68,7 +67,7 @@ namespace NotesApp.Application.Services
                 .SetAboutMe(userDto.AboutMe)
                 .Update(user);
 
-            updatedUser.SetUpdatedAt();
+            // updatedUser.SetUpdatedAt();
 
             return await _repo
                 .UpdateUser(user, userId);

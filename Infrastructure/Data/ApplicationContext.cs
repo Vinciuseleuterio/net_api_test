@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using NotesApp.Domain.Entities;
-using NotesApp.Domain.Interfaces;
 using System.Reflection;
 
 namespace NotesApp.Infrastructure.Data

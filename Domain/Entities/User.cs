@@ -4,14 +4,14 @@ namespace NotesApp.Domain.Entities
 {
     public class User : StandardModel, ISoftDelete
     {
-        public string Name { get; private set; }
-        public string Email { get; private set; }
-        public string AboutMe { get; private set; } = String.Empty;
+        public string Name { get; set; }
+        public string Email { get; set; }
+        public string AboutMe { get; set; } = String.Empty;
         public List<Note> Notes { get; } = [];
         public List<Group> Groups { get; } = [];
         public List<GroupMembership> GroupMemberships { get; } = [];
 
-        private User(string name, string email, string aboutMe)
+        public User(string name, string email, string aboutMe)
         {
             Name = name;
             Email = email;
@@ -24,36 +24,30 @@ namespace NotesApp.Domain.Entities
             private string _email = string.Empty;
             private string _aboutMe = string.Empty;
 
-            public UserBuilder SetName(string name)
+            public virtual UserBuilder SetName(string name)
             {
                 _name = name;
                 return this;
             }
 
-            public UserBuilder SetEmail(string email)
+            public virtual UserBuilder SetEmail(string email)
             {
                 _email = email;
                 return this;
             }
 
-            public UserBuilder SetAboutMe(string aboutMe)
+            public virtual UserBuilder SetAboutMe(string aboutMe)
             {
                 _aboutMe = aboutMe;
                 return this;
             }
 
-            public User Build()
+            public virtual User Build()
             {
-                if (string.IsNullOrEmpty(_name))
-                    throw new InvalidOperationException("Name must be set before Build()");
-
-                if (string.IsNullOrEmpty(_email))
-                    throw new InvalidOperationException("Email must be set before Build()");
-
                 return new User(_name, _email, _aboutMe);
             }
 
-            public User Update(User user)
+            public virtual User Update(User user)
             {
                 user.Name = _name;
                 user.AboutMe = _aboutMe;
