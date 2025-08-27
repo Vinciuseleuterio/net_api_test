@@ -25,7 +25,7 @@ namespace NotesApp.Infrastructure.Repositories
                 await _context.SaveChangesAsync();
             }
             catch (DbUpdateException ex)
-            {
+            { 
                 // Here you can log, wrap, or rethrow the exception
                 throw new DbUpdateException("Error saving user in the database", ex);
             }
@@ -51,7 +51,7 @@ namespace NotesApp.Infrastructure.Repositories
 
             return user;
         }
-
+        
         public async Task DeleteUserAsync(User user)
         {
             user.SetIsDeleted();
@@ -80,4 +80,5 @@ namespace NotesApp.Infrastructure.Repositories
             return user;
         }
     }
+    
 }

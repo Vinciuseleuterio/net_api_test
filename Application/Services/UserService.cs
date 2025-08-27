@@ -59,7 +59,7 @@ namespace NotesApp.Application.Services
 
             if (!result.IsValid) throw new ValidationException(result.Errors);
 
-            var user = await _repo
+                var user = await _repo
                 .ExistingUser(userId);
 
             var updatedUser = _userBuilder

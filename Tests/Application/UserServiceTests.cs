@@ -11,19 +11,21 @@ namespace Tests;
 
 public class UserServiceTest
 {
+    // Relembrando que, classes de teste não tem um DUI (Dependecy Injection Interface)
     private readonly IUserRepository _userRepositoryMock;
     private readonly IValidator<CreateUserDto> _createValidatorMock;
     private readonly IValidator<EditUserDto> _editValidatorMock;
     private readonly User.UserBuilder _userBuilder;
-    private readonly UserService _sut; // System Under Test
+    private readonly UserService _sut; // System Under Tests
 
     public UserServiceTest()
     {
         _userRepositoryMock = Substitute.For<IUserRepository>();
         _createValidatorMock = Substitute.For<IValidator<CreateUserDto>>();
         _editValidatorMock = Substitute.For<IValidator<EditUserDto>>();
-        _userBuilder = new User.UserBuilder();
+        _userBuilder = new User.UserBuilder(); 
 
+        // Inicializamos "UserService" passando para o seu construtor os mocks e builder
         _sut = new UserService(
             _userRepositoryMock,
             _createValidatorMock,
@@ -70,18 +72,17 @@ public class UserServiceTest
 
         _createValidatorMock.Validate(userDto).Returns(validationResult);
 
-        // Act
-        Func<Task> act = async () => await _sut.CreateUser(userDto);
+        // Act 
+        await Assert.ThrowsAsync<ValidationException>(async () => await _sut.CreateUser(userDto));
 
         // Assert
-        await act.Should().ThrowAsync<ValidationException>();
         await _userRepositoryMock.DidNotReceive().CreateUser(Arg.Is<User>(u => u.Name == "" && u.Email == "jhondoe@example" && u.AboutMe == "Dev"));
     }
 
     [Fact]
     public async Task GetUserById_WhenUserExists_ShouldReturnUser()
     {
-        // Arrange
+            // Arrange
         var userId = 1L;
         var expectedUser = _userBuilder.SetName("Jhon Doe").SetEmail("jhondoe@example.com").SetAboutMe("Dev").Build();
         _userRepositoryMock.GetUserById(userId).Returns(expectedUser);

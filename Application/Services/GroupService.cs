@@ -43,12 +43,22 @@ namespace NotesApp.Application.Services
 
         public async Task<Group> GetGroupById(long userId, long groupId)
         {
+            if (userId <= 0 || groupId <= 0)
+            {
+                throw new ArgumentException("User id or Group id should be greater then 0");
+            }
             return await _repo
                 .GetGroupById(userId, groupId);
         }
 
         public async Task<IEnumerable<Group>> GetGroupsFromUser(long userId)
         {
+            
+            if (userId <= 0)
+            {
+                throw new ArgumentException("User id should be greater then 0");
+            }
+
             return await _repo
                 .GetGroupsFromUser(userId);
         }
@@ -77,6 +87,11 @@ namespace NotesApp.Application.Services
 
         public async Task DeleteGroup(long userId, long groupId)
         {
+            if (userId <= 0 || groupId <= 0)
+            {
+                throw new ArgumentException("User id or GroupId should be greater then 0");
+            }
+
             await _repo
                 .DeleteGroup(userId, groupId);
         }

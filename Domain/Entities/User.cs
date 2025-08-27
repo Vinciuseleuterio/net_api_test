@@ -29,6 +29,7 @@ namespace NotesApp.Domain.Entities
                 _name = name;
                 return this;
             }
+        
 
             public virtual UserBuilder SetEmail(string email)
             {

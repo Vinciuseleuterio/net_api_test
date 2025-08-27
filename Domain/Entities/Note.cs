@@ -1,6 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
-namespace NotesApp.Domain.Entities
+﻿namespace NotesApp.Domain.Entities
 {
     public class Note : StandardModel
     {
@@ -62,12 +60,6 @@ namespace NotesApp.Domain.Entities
 
             public Note Build()
             {
-                if (string.IsNullOrEmpty(_title))
-                    throw new InvalidOperationException("Title must be set before build");
-
-                if (_creatorId <= 0)
-                    throw new InvalidOperationException("CreatorId must be set before build");
-
                 return new Note(_title, _content, _creatorId, _groupId);
             }
 

@@ -49,7 +49,7 @@ namespace NotesApp.Domain.Entities
                     throw new InvalidOperationException("Name must be set before Build()");
 
                 if (_creatorId <= 0)
-                    throw new InvalidOperationException("Email must be set before Build()");
+                    throw new InvalidOperationException("CreatorId must be set before Build()");
 
                 return new Group(_name, _description, _creatorId);
             }

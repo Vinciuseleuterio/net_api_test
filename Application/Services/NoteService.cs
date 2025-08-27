@@ -1,5 +1,6 @@
 ﻿using Application.Interfaces;
 using FluentValidation;
+using FluentValidation.Results;
 using NotesApp.Application.DTOs;
 using NotesApp.Domain.Entities;
 using NotesApp.Domain.Interfaces;
@@ -68,6 +69,10 @@ namespace NotesApp.Application.Services
 
         public async Task<Note> GetNoteById(long userId, long noteId)
         {
+            if(userId <= 0) throw new InvalidCastException("user id must be set");
+
+            if(noteId <= 0) throw new InvalidCastException("note id must be set");
+
             return await _repo
                 .GetNoteById(userId, noteId);
         }
@@ -87,6 +92,11 @@ namespace NotesApp.Application.Services
 
         public async Task<Note> UpdateNote(NoteDto noteDto, long userId, long noteId)
         {
+            var result = _noteDtoValidator
+                .Validate(noteDto);
+
+            if(!result.IsValid) throw new ValidationException(result.Errors); 
+
             var note = await _repo
                 .ExistingNote(noteId);
 
@@ -103,6 +113,9 @@ namespace NotesApp.Application.Services
 
         public async Task DeleteNote(long userId, long noteId)
         {
+            if (userId <= 0) throw new InvalidCastException("userId must be set");
+            if (noteId <= 0) throw new InvalidCastException("noteId must be set");
+
             await _repo
                 .DeleteNote(userId, noteId);
         }
