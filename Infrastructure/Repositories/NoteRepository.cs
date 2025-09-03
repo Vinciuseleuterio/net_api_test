@@ -1,5 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
-using NotesApp.Domain.Entities;
+﻿using Domain.Entities;
+using Microsoft.EntityFrameworkCore;
 using NotesApp.Domain.Interfaces;
 using NotesApp.Infrastructure.Data;
 

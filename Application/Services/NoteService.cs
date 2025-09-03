@@ -1,8 +1,8 @@
 ﻿using Application.Interfaces;
+using Domain.Entities;
 using FluentValidation;
 using FluentValidation.Results;
 using NotesApp.Application.DTOs;
-using NotesApp.Domain.Entities;
 using NotesApp.Domain.Interfaces;
 
 namespace NotesApp.Application.Services

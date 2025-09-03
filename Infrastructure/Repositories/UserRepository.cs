@@ -1,5 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
-using NotesApp.Domain.Entities;
+﻿using Domain.Entities;
+using Microsoft.EntityFrameworkCore;
 using NotesApp.Domain.Interfaces;
 using NotesApp.Infrastructure.Data;
 
@@ -25,7 +25,7 @@ namespace NotesApp.Infrastructure.Repositories
                 await _context.SaveChangesAsync();
             }
             catch (DbUpdateException ex)
-            { 
+            {
                 // Here you can log, wrap, or rethrow the exception
                 throw new DbUpdateException("Error saving user in the database", ex);
             }
@@ -51,7 +51,7 @@ namespace NotesApp.Infrastructure.Repositories
 
             return user;
         }
-        
+
         public async Task DeleteUserAsync(User user)
         {
             user.SetIsDeleted();
@@ -72,13 +72,8 @@ namespace NotesApp.Infrastructure.Repositories
                 .Include(u => u.Notes)
                 .FirstAsync(u => u.Id == userId);
 
-            if (user == null)
-            {
-                throw new ArgumentException("User not found");
-            }
-
-            return user;
+            return user ?? throw new ArgumentException("User not found");
         }
     }
-    
+
 }

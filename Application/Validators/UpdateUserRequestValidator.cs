@@ -1,11 +1,11 @@
-﻿using FluentValidation;
-using NotesApp.Application.DTOs;
+﻿using Application.Features.UserRequests;
+using FluentValidation;
 
 namespace NotesApp.Application.Validators
 {
-    public class EditUserDtoValidator : AbstractValidator<EditUserDto>
+    public class UpdateUserRequestValidator : AbstractValidator<UpdateUserRequest>
     {
-        public EditUserDtoValidator()
+        public UpdateUserRequestValidator()
         {
             RuleFor(user => user.Name)
                 .NotNull().NotEmpty().WithMessage("Name is required.")

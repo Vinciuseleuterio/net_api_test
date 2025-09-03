@@ -1,7 +1,7 @@
-﻿using Application.Interfaces;
+﻿using Application.Features.UserRequests;
+using Application.Interfaces;
+using Domain.Entities;
 using FluentValidation;
-using NotesApp.Application.DTOs;
-using NotesApp.Domain.Entities;
 using NotesApp.Domain.Interfaces;
 
 namespace NotesApp.Application.Services
@@ -9,13 +9,13 @@ namespace NotesApp.Application.Services
     public class UserService : IUserService
     {
         private readonly IUserRepository _repo;
-        private readonly IValidator<CreateUserDto> _createValidator;
-        private readonly IValidator<EditUserDto> _editValidator;
+        private readonly IValidator<CreateUserRequest> _createValidator;
+        private readonly IValidator<UpdateUserRequest> _editValidator;
         private readonly User.UserBuilder _userBuilder;
 
         public UserService(IUserRepository repo,
-            IValidator<CreateUserDto> createValidator,
-            IValidator<EditUserDto> ediValidator,
+            IValidator<CreateUserRequest> createValidator,
+            IValidator<UpdateUserRequest> ediValidator,
             User.UserBuilder userBuilder)
         {
             _repo = repo;
@@ -24,20 +24,20 @@ namespace NotesApp.Application.Services
             _userBuilder = userBuilder;
         }
 
-        public async Task<User> CreateUser(CreateUserDto userDto)
+        public async Task<User> CreateUser(CreateUserRequest request)
         {
 
             var result = _createValidator
-                .Validate(userDto);
+                .Validate(request);
 
             if (!result.IsValid) throw new ValidationException(result.Errors);
 
             // Cria um novo objeto de usuário
 
             var user = _userBuilder
-                .SetName(userDto.Name)
-                .SetEmail(userDto.Email)
-                .SetAboutMe(userDto.AboutMe)
+                .SetName(request.Name)
+                .SetEmail(request.Email)
+                .SetAboutMe(request.AboutMe)
                 .Build();
 
             //user.SetCreatedAt();
@@ -52,19 +52,19 @@ namespace NotesApp.Application.Services
                 .GetUserById(userId);
         }
 
-        public async Task<User> UpdateUser(EditUserDto userDto, long userId)
+        public async Task<User> UpdateUser(UpdateUserRequest request, long userId)
         {
             var result = _editValidator
-                .Validate(userDto);
+                .Validate(request);
 
             if (!result.IsValid) throw new ValidationException(result.Errors);
 
-                var user = await _repo
-                .ExistingUser(userId);
+            var user = await _repo
+            .ExistingUser(userId);
 
             var updatedUser = _userBuilder
-                .SetName(userDto.Name)
-                .SetAboutMe(userDto.AboutMe)
+                .SetName(request.Name)
+                .SetAboutMe(request.AboutMe)
                 .Update(user);
 
             // updatedUser.SetUpdatedAt();

@@ -1,9 +1,9 @@
-﻿using FluentValidation;
-using NotesApp.Application.DTOs;
+﻿using Application.Features.UserRequests.GroupRequests;
+using FluentValidation;
 
-namespace NotesApp.Application.Validators
+namespace Application.Validators
 {
-    public class GroupDtoValidator : AbstractValidator<GroupDto>
+    public class GroupDtoValidator : AbstractValidator<CreateGroupRequest>
     {
         public GroupDtoValidator()
         {

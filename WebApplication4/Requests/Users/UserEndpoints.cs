@@ -1,6 +1,7 @@
-using Application.Interfaces;
+using Application.Features.UserRequests;
+using Domain.Entities;
+using MediatR;
 using NotesApp.Application.DTOs;
-using NotesApp.Domain.Entities;
 
 namespace Presentation.Requests.Users
 {
@@ -11,27 +12,30 @@ namespace Presentation.Requests.Users
             var user = app.MapGroup("/api")
                 .WithTags("User");
 
-            user.MapPost("/users", async (CreateUserDto createUserDto, IUserService userService) =>
+            user.MapPost("/users", async (IMediator mediator, CreateUserRequest request) =>
             {
-                var user = await userService.CreateUser(createUserDto);
-                return Results.Created($"/users/{user.Id}", UserToDto(user));
+                var user = await mediator.Send(request);
+                return Results.Created($"/users", UserToDto(user));
             });
 
-            user.MapGet("/users/{userId}", async (long userId, IUserService userService) =>
+            user.MapGet("/users/{userId}", async (IMediator mediator, long userId) =>
             {
-                var user = await userService.GetUserById(userId);
+                var request = new GetUserByIdRequest { UserId = userId };
+                var user = await mediator.Send(request);
                 return Results.Ok(UserToDto(user));
             });
 
-            user.MapPatch("/users/{userId}", async (long userId, EditUserDto editUserDto, IUserService userService) =>
+            user.MapPatch("/users{userId}", async (IMediator mediator, UpdateUserRequest request, long userId) =>
             {
-                var user = await userService.UpdateUser(editUserDto, userId);
+                request.UserId = userId;
+                var user = await mediator.Send(request);
                 return Results.Ok(UserToDto(user));
             });
 
-            user.MapDelete("/users/{userId}", async (long userId, IUserService userService) =>
+            user.MapDelete("/users/{userId}", async (IMediator mediator, long userId) =>
             {
-                await userService.DeleteUserAsync(userId);
+                var request = new DeleteUserRequest { UserId = userId };
+                await mediator.Publish(request);
                 return Results.Ok("User Deleted");
             });
 
@@ -39,7 +43,7 @@ namespace Presentation.Requests.Users
         }
 
         private static EditUserDto UserToDto(User user) =>
-            new EditUserDto
+            new()
             {
                 Name = user.Name,
                 AboutMe = user.AboutMe

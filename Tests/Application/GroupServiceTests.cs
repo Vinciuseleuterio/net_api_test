@@ -1,226 +1,227 @@
+using Application.Services;
 using FluentAssertions;
 using FluentValidation;
 using FluentValidation.Results;
 using NotesApp.Application.DTOs;
-using NotesApp.Application.Services;
 using NotesApp.Domain.Entities;
 using NotesApp.Domain.Interfaces;
 using NSubstitute;
 
-namespace NotesApp.Tests.Application;
-
-public class GroupServiceTests
+namespace NotesApp.Tests.Application
 {
-    private readonly IGroupRepository _repositoryMock;
-    private readonly IValidator<GroupDto> _validatorMock;
-    private readonly Group.GroupBuilder _groupBuilder;
-    private readonly GroupService _sut;
-
-    public GroupServiceTests()
+    public class GroupServiceTests
     {
-        _repositoryMock = Substitute.For<IGroupRepository>();
-        _validatorMock = Substitute.For<IValidator<GroupDto>>();
-        _groupBuilder = new Group.GroupBuilder();
+        private readonly IGroupRepository _repositoryMock;
+        private readonly IValidator<GroupDto> _validatorMock;
+        private readonly Group.GroupBuilder _groupBuilder;
+        private readonly GroupService _sut;
 
-        _sut = new GroupService
-            (
-            _repositoryMock,
-            _validatorMock,
-            _groupBuilder
-            );
-    }
+        public GroupServiceTests()
+        {
+            _repositoryMock = Substitute.For<IGroupRepository>();
+            _validatorMock = Substitute.For<IValidator<GroupDto>>();
+            _groupBuilder = new Group.GroupBuilder();
 
-    [Fact]
-    public async Task CreateGroup_WithValidData_ShouldReturnCreatedUser()
-    {
-        // Arrange
-        var userId = 1L;
-        var groupDto = new GroupDto { Name = "Jhon Doe", Description = "Dev" };
-        var validationResult = new ValidationResult();
+            _sut = new GroupService
+                (
+                _repositoryMock,
+                _validatorMock,
+                _groupBuilder
+                );
+        }
 
-        var createdGroup = _groupBuilder
-            .SetName("Jhon Doe")
-            .SetDescription("Dev")
-            .SetCreatorId(1L)
-            .Build();
+        [Fact]
+        public async Task CreateGroup_WithValidData_ShouldReturnCreatedUser()
+        {
+            // Arrange
+            var userId = 1L;
+            var groupDto = new GroupDto { Name = "Jhon Doe", Description = "Dev" };
+            var validationResult = new ValidationResult();
 
-        _validatorMock.Validate(groupDto).Returns(validationResult);
+            var createdGroup = _groupBuilder
+                .SetName("Jhon Doe")
+                .SetDescription("Dev")
+                .SetCreatorId(1L)
+                .Build();
 
-        _repositoryMock.CreateGroup(Arg.Is<Group>(g => g.Name == "Jhon Doe" && g.Description == "Dev"), userId).Returns(createdGroup);
+            _validatorMock.Validate(groupDto).Returns(validationResult);
 
-        // Act
-        var call = await _sut.CreateGroup(groupDto, userId);
+            _repositoryMock.CreateGroup(Arg.Is<Group>(g => g.Name == "Jhon Doe" && g.Description == "Dev"), userId).Returns(createdGroup);
 
-        // Assert
-        call.Should().BeEquivalentTo(createdGroup);
-        await _repositoryMock.Received(1).CreateGroup(Arg.Is<Group>(g => g.Name == "Jhon Doe" && g.Description == "Dev"), userId);
-    }
+            // Act
+            var call = await _sut.CreateGroup(groupDto, userId);
 
-    [Fact]
-    public async Task CreateGroup_WithInvalidData_ShoudntReturnCreatedUser()
-    {
-        // Arrange
-        var userId = 1L;
-        var groupDto = new GroupDto { Name = "", Description = "Dev" };
-        var validationFailure = new List<ValidationFailure> { new(groupDto.Name, "Name is required") };
-        var validationResult = new ValidationResult(validationFailure);
+            // Assert
+            call.Should().BeEquivalentTo(createdGroup);
+            await _repositoryMock.Received(1).CreateGroup(Arg.Is<Group>(g => g.Name == "Jhon Doe" && g.Description == "Dev"), userId);
+        }
 
-        _validatorMock.Validate(groupDto).Returns(validationResult);
+        [Fact]
+        public async Task CreateGroup_WithInvalidData_ShoudntReturnCreatedUser()
+        {
+            // Arrange
+            var userId = 1L;
+            var groupDto = new GroupDto { Name = "", Description = "Dev" };
+            var validationFailure = new List<ValidationFailure> { new(groupDto.Name, "Name is required") };
+            var validationResult = new ValidationResult(validationFailure);
 
-        // Act
-        var call = Assert.ThrowsAsync<ValidationException>(async () => await _sut.CreateGroup(groupDto, userId));
+            _validatorMock.Validate(groupDto).Returns(validationResult);
 
-        // Assert
-        await _repositoryMock.DidNotReceive().CreateGroup(Arg.Is<Group>(g => g.Name == "" && g.Description == "Dev"), userId);
-    }
+            // Act
+            var call = Assert.ThrowsAsync<ValidationException>(async () => await _sut.CreateGroup(groupDto, userId));
 
-    [Fact]
-    public async Task GetGroupById_WithValidId_ReturnGroup()
-    {
-        //Arrange
-        var userId = 1L;
-        var groupId = 1L;
+            // Assert
+            await _repositoryMock.DidNotReceive().CreateGroup(Arg.Is<Group>(g => g.Name == "" && g.Description == "Dev"), userId);
+        }
 
-        var existingGroup = _groupBuilder
-            .SetName("Jhon Doe")
-            .SetDescription("Dev")
-            .SetCreatorId(1L)
-            .Build();
+        [Fact]
+        public async Task GetGroupById_WithValidId_ReturnGroup()
+        {
+            //Arrange
+            var userId = 1L;
+            var groupId = 1L;
 
-        _repositoryMock.GetGroupById(1L, 1L).Returns(existingGroup);
+            var existingGroup = _groupBuilder
+                .SetName("Jhon Doe")
+                .SetDescription("Dev")
+                .SetCreatorId(1L)
+                .Build();
 
-        //Act
-        var call = await _sut.GetGroupById(userId, groupId);
+            _repositoryMock.GetGroupById(1L, 1L).Returns(existingGroup);
 
-        //Assert
-        call.Should().BeEquivalentTo(existingGroup); // -> Garantindo que o retorno da chamada será o "existingGroup"
-        await _repositoryMock.Received(1).GetGroupById(1L, 1L);
-    }
+            //Act
+            var call = await _sut.GetGroupById(userId, groupId);
 
-    [Fact]
-    public async Task GetGroupById_WithInvalidId_ReturnGroup()
-    {
-        // Arrange
-        var userId = 0;
-        var groupId = 1L;
+            //Assert
+            call.Should().BeEquivalentTo(existingGroup); // -> Garantindo que o retorno da chamada será o "existingGroup"
+            await _repositoryMock.Received(1).GetGroupById(1L, 1L);
+        }
 
-        //Act
-        var call = Assert.ThrowsAsync<ValidationException>(async () => await _sut.GetGroupById(userId, groupId));
+        [Fact]
+        public async Task GetGroupById_WithInvalidId_ReturnGroup()
+        {
+            // Arrange
+            var userId = 0;
+            var groupId = 1L;
 
-        //Assert
-        await _repositoryMock.DidNotReceive().GetGroupById(0, 1L);
-    }
+            //Act
+            var call = Assert.ThrowsAsync<ValidationException>(async () => await _sut.GetGroupById(userId, groupId));
 
-    [Fact]
-    public async Task GetGroupsFromUser_WithValidId_ReturnGroups()
-    {
-        //Arrange
-        var userId = 1L;
+            //Assert
+            await _repositoryMock.DidNotReceive().GetGroupById(0, 1L);
+        }
 
-        var existingGroup = _groupBuilder
-          .SetName("Jhon Doe")
-          .SetDescription("Dev")
-          .SetCreatorId(1L)
-          .Build();
+        [Fact]
+        public async Task GetGroupsFromUser_WithValidId_ReturnGroups()
+        {
+            //Arrange
+            var userId = 1L;
 
-        var expectedGroups = new List<Group> { existingGroup };
+            var existingGroup = _groupBuilder
+              .SetName("Jhon Doe")
+              .SetDescription("Dev")
+              .SetCreatorId(1L)
+              .Build();
 
-        _repositoryMock.GetGroupsFromUser(1L).Returns(expectedGroups);
+            var expectedGroups = new List<Group> { existingGroup };
 
-        //Act
-        var call = await _sut.GetGroupsFromUser(userId);
+            _repositoryMock.GetGroupsFromUser(1L).Returns(expectedGroups);
 
-        //Assert
-        call.Should().BeEquivalentTo(expectedGroups);
-        await _repositoryMock.Received(1).GetGroupsFromUser(1L);
-    }
+            //Act
+            var call = await _sut.GetGroupsFromUser(userId);
 
-    [Fact]
-    public void GetGroupsFromUser_WithInvalidId_ShouldntReturnGroups()
-    {
-        //Arrange
-        var userId = 0;
+            //Assert
+            call.Should().BeEquivalentTo(expectedGroups);
+            await _repositoryMock.Received(1).GetGroupsFromUser(1L);
+        }
 
-        //Act
-        var call = Assert.ThrowsAsync<ValidationException>(async () => await _sut.GetGroupsFromUser(userId));
+        [Fact]
+        public void GetGroupsFromUser_WithInvalidId_ShouldntReturnGroups()
+        {
+            //Arrange
+            var userId = 0;
 
-        //Assert
-        _repositoryMock.DidNotReceive().GetGroupsFromUser(0);
-    }
+            //Act
+            var call = Assert.ThrowsAsync<ValidationException>(async () => await _sut.GetGroupsFromUser(userId));
 
-    [Fact]
-    public async Task UpdateGroup_WithValidData_ReturnValidGroup()
-    {
-        var userId = 1L;
-        var groupId = 1L;
+            //Assert
+            _repositoryMock.DidNotReceive().GetGroupsFromUser(0);
+        }
 
-        // DTO a ser enviado como parâmetro do método
-        var groupDto = new GroupDto { Name = "Jhon Doe", Description = "Dev" };
+        [Fact]
+        public async Task UpdateGroup_WithValidData_ReturnValidGroup()
+        {
+            var userId = 1L;
+            var groupId = 1L;
 
-        // Retorno esperado
-        var createdGroup = _groupBuilder
-            .SetName("Jhon Doe")
-            .SetDescription("Dev")
-            .SetCreatorId(1L)
-            .Build();
+            // DTO a ser enviado como parâmetro do método
+            var groupDto = new GroupDto { Name = "Jhon Doe", Description = "Dev" };
 
-        var validationResult = new ValidationResult();
+            // Retorno esperado
+            var createdGroup = _groupBuilder
+                .SetName("Jhon Doe")
+                .SetDescription("Dev")
+                .SetCreatorId(1L)
+                .Build();
 
-        // Obrigamos o resultado de validação mockado a retornar uma validação de sucesso
-        _validatorMock.Validate(groupDto).Returns(validationResult);
-        _repositoryMock.ExistingGroup(1L).Returns(createdGroup);
-        _repositoryMock.UpdateGroup(Arg.Is<Group>(g => g.Name == "Jhon Doe" && g.Description == "Dev"), 1L, 1L).Returns(createdGroup);
+            var validationResult = new ValidationResult();
 
-        //Act
-        var call = await _sut.UpdateGroup(groupDto, userId, groupId);
+            // Obrigamos o resultado de validação mockado a retornar uma validação de sucesso
+            _validatorMock.Validate(groupDto).Returns(validationResult);
+            _repositoryMock.ExistingGroup(1L).Returns(createdGroup);
+            _repositoryMock.UpdateGroup(Arg.Is<Group>(g => g.Name == "Jhon Doe" && g.Description == "Dev"), 1L, 1L).Returns(createdGroup);
 
-        call.Should().BeEquivalentTo(createdGroup);
-        await _repositoryMock.Received(1).UpdateGroup(Arg.Is<Group>(g => g.Name == "Jhon Doe" && g.Description == "Dev"), 1L, 1L);
+            //Act
+            var call = await _sut.UpdateGroup(groupDto, userId, groupId);
 
-    }
+            call.Should().BeEquivalentTo(createdGroup);
+            await _repositoryMock.Received(1).UpdateGroup(Arg.Is<Group>(g => g.Name == "Jhon Doe" && g.Description == "Dev"), 1L, 1L);
 
-    [Fact]
-    public async Task UpdateGroup_WithInvalidData_ThrowsException()
-    {
-        var userId = 1L;
-        var groupId = 1L;
+        }
 
-        var groupDto = new GroupDto { Name = "", Description = "Dev" };
+        [Fact]
+        public async Task UpdateGroup_WithInvalidData_ThrowsException()
+        {
+            var userId = 1L;
+            var groupId = 1L;
 
-        var validationFailure = new List<ValidationFailure>();
-        var valitadionResult = new ValidationResult(validationFailure);
+            var groupDto = new GroupDto { Name = "", Description = "Dev" };
 
-        _validatorMock.Validate(groupDto).Returns(valitadionResult);
+            var validationFailure = new List<ValidationFailure>();
+            var valitadionResult = new ValidationResult(validationFailure);
 
-        var call = Assert.ThrowsAsync<ValidationException>(async () => await _sut.UpdateGroup(groupDto, userId, groupId));
+            _validatorMock.Validate(groupDto).Returns(valitadionResult);
 
-        await _repositoryMock.DidNotReceive().UpdateGroup(Arg.Is<Group>(g => g.Name == "Jhon Doe" && g.Description == "Dev"), 1L, 1L);
-    }
+            var call = Assert.ThrowsAsync<ValidationException>(async () => await _sut.UpdateGroup(groupDto, userId, groupId));
+
+            await _repositoryMock.DidNotReceive().UpdateGroup(Arg.Is<Group>(g => g.Name == "Jhon Doe" && g.Description == "Dev"), 1L, 1L);
+        }
 
 
-    [Fact]
-    public async Task DeleteGroup_WithValidId_ShouldReturnDeletedGroup()
-    {
-        //Arrange 
-        var userId = 1L;
-        var groupId = 1L;
+        [Fact]
+        public async Task DeleteGroup_WithValidId_ShouldReturnDeletedGroup()
+        {
+            //Arrange 
+            var userId = 1L;
+            var groupId = 1L;
 
-        //Act
-        await _sut.DeleteGroup(userId, groupId);
+            //Act
+            await _sut.DeleteGroup(userId, groupId);
 
-        //Assert
-        await _repositoryMock.Received(1).DeleteGroup(1L, 1L);
-    }
+            //Assert
+            await _repositoryMock.Received(1).DeleteGroup(1L, 1L);
+        }
 
-    [Fact]
-    public async Task DeleteGroup_WithInvalidId_ShouldntReturnGroup()
-    {
-        //Arrange 
-        var userId = 0L;
-        var groupId = 1L;
-        //Act
-        var act = Assert.ThrowsAsync<ArgumentException>(async () => await _sut.DeleteGroup(userId, groupId));
-        //Assert
-        await _repositoryMock.Received(0).DeleteGroup(1L, 1L);
+        [Fact]
+        public async Task DeleteGroup_WithInvalidId_ShouldntReturnGroup()
+        {
+            //Arrange 
+            var userId = 0L;
+            var groupId = 1L;
+            //Act
+            var act = Assert.ThrowsAsync<ArgumentException>(async () => await _sut.DeleteGroup(userId, groupId));
+            //Assert
+            await _repositoryMock.Received(0).DeleteGroup(1L, 1L);
+        }
     }
 }

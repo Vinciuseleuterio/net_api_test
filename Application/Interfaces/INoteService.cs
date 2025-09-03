@@ -1,5 +1,5 @@
-﻿using NotesApp.Application.DTOs;
-using NotesApp.Domain.Entities;
+﻿using Domain.Entities;
+using NotesApp.Application.DTOs;
 
 namespace Application.Interfaces
 {

@@ -1,6 +1,6 @@
 using Application.Interfaces;
+using Domain.Entities;
 using NotesApp.Application.DTOs;
-using NotesApp.Domain.Entities;
 
 namespace Presentation.Requests.Notes
 {

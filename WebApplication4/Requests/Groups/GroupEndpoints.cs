@@ -1,4 +1,6 @@
+using Application.Features.UserRequests.GroupRequests;
 using Application.Interfaces;
+using MediatR;
 using NotesApp.Application.DTOs;
 using NotesApp.Domain.Entities;
 
@@ -11,9 +13,10 @@ namespace Presentation.Requests.Groups
             var group = app.MapGroup("/api")
                 .WithTags("Group");
 
-            group.MapPost("/users/{userId}/groups", async (long userId, GroupDto createGroupDto, IGroupService groupService) =>
+            group.MapPost("/users/{userId}/groups", async (long userId, CreateGroupRequest request, IMediator mediator) =>
             {
-                var group = await groupService.CreateGroup(createGroupDto, userId);
+                request.UserId = userId;
+                var group = await mediator.Send(request);
                 return Results.Ok(GroupToDto(group));
             });
 
