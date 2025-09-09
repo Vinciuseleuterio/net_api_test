@@ -107,9 +107,7 @@ namespace NotesApp.Infrastructure.Repositories
             var user = await _context.User
                 .FindAsync(userId);
 
-            if (user == null) throw new ArgumentException("User not found");
-
-            return user;
+            return user ?? throw new ArgumentException("User not found");
         }
 
         public async Task<Group> ExistingGroup(long groupId)
@@ -117,10 +115,7 @@ namespace NotesApp.Infrastructure.Repositories
             if (groupId <= 0) throw new ArgumentException("Invalid group ID", nameof(groupId));
 
             var group = await _context.Group
-                .FindAsync(groupId);
-
-            if (group == null) throw new ArgumentException("Group not found");
-
+                .FindAsync(groupId) ?? throw new ArgumentException("Group not found");
             return group;
         }
     }

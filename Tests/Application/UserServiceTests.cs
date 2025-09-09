@@ -3,7 +3,6 @@ using Domain.Entities;
 using FluentAssertions;
 using FluentValidation;
 using FluentValidation.Results;
-using NotesApp.Application.DTOs;
 using NotesApp.Application.Services;
 using NotesApp.Domain.Interfaces;
 using NSubstitute;

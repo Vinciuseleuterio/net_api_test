@@ -5,9 +5,9 @@ namespace NotesApp.Domain.Entities
 {
     public class GroupMembership : ISoftDelete
     {
-        public required long UserId { get; init; }
+        public long UserId { get; init; }
         public User User { get; private set; } = null!;
-        public required long GroupId { get; init; }
+        public long GroupId { get; init; }
         public Group Group { get; private set; } = null!;
         public DateTime CreatedAt { get; private set; }
         public DateTime UpdatedAt { get; private set; }

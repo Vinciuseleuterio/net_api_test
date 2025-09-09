@@ -21,8 +21,11 @@ public class UpdateGroupRequestHandler(IGroupRepository repo,
 
         if (!result.IsValid) throw new ValidationException(result.Errors);
 
+        await _repo
+            .ExistingUser(request.UserId);
+
         var group = await _repo
-            .ExistingGroup(request.UserId);
+            .ExistingGroup(request.GroupId);
 
         var updatedGroup = _builder
             .SetName(request.Name)

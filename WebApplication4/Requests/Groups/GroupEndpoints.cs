@@ -1,3 +1,4 @@
+using Application.Features.GroupRequests;
 using Application.Features.UserRequests.GroupRequests;
 using Application.Interfaces;
 using MediatR;
@@ -20,21 +21,25 @@ namespace Presentation.Requests.Groups
                 return Results.Ok(GroupToDto(group));
             });
 
-            group.MapGet("/users/{userId}/groups/{groupId}", async (long userId, long groupId, IGroupService groupService) =>
+            group.MapGet("/users/{userId}/groups/{groupId}", async (long userId, long groupId, IMediator mediator) =>
             {
-                var group = await groupService.GetGroupById(userId, groupId);
+                var request = new GetGroupByIdRequest { UserId = userId, GroupId = groupId };
+                var group = await mediator.Send(request);
                 return Results.Ok(GroupToDto(group));
             });
 
-            group.MapPatch("/users/{userId}/groups/{groupId}", async (long userId, long groupId, GroupDto groupDto, IGroupService groupService) =>
+            group.MapPatch("/users/{userId}/groups/{groupId}", async (long userId, long groupId, IMediator mediator, UpdateGroupRequest request) =>
             {
-                var group = await groupService.UpdateGroup(groupDto, userId, groupId);
+                request.UserId = userId;
+                request.GroupId = groupId;
+                var group = await mediator.Send(request);
                 return Results.Ok(GroupToDto(group));
             });
 
-            group.MapDelete("/users/{userId}/groups/{groupId}", async (long userId, long groupId, IGroupService groupService) =>
+            group.MapDelete("/users/{userId}/groups/{groupId}", async (long userId, long groupId, IMediator mediator) =>
             {
-                await groupService.DeleteGroup(userId, groupId);
+                var request = new DeleteGroupRequest { UserId = userId, GroupId = groupId };
+                await mediator.Publish(request);
                 return Results.Ok();
             });
 
